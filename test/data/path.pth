@@ -1,0 +1,32 @@
+Version(10);
+PathCount(2);
+
+Path("cp4_spawn")
+{
+	Data(0);
+	PathTime(0.000000);
+	SplineType("Hermite");
+
+	Properties(0)
+	{
+	}
+
+	Nodes(1)
+	{
+		Node()
+		{
+			Position(-131.019501, 0.000000, -251.667999);
+			Data(0);
+			Rotation(1.000000, 0.000000, 0.000000, 0.000000);
+			Properties(0)
+			{
+			}
+		}
+	}
+
+}
+
+Path("cp1_spawn")
+{
+	Data(0);
+}
