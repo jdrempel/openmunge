@@ -2,6 +2,7 @@ import pathlib
 import unittest
 from parameterized import parameterized
 
+from mungers.ast.PathConfig import PathConfig
 from mungers.util.config_parser import *
 
 
@@ -23,9 +24,8 @@ class ConfigParserTest(unittest.TestCase):
         The correctness of the parse results will be judged in a higher-level test.
         """
         data_file = self.data_dir / filename
-        parse_result = parse_config_file(data_file).as_list()
-        self.assertIsInstance(parse_result, list)
-        self.assertNotEqual(len(parse_result), 0)
+        parse_result = parse_config_file(data_file, PathConfig)
+        self.assertIsInstance(parse_result, PathConfig)
 
     @parameterized.expand([
         ('Path',),
@@ -73,4 +73,23 @@ class ConfigParserTest(unittest.TestCase):
     def test_definition_parsing(self, string, def_name, def_args):
         result = definition.parse_string(string)
         self.assertSequenceEqual(result.name, def_name)
-        self.assertListEqual(result.args.as_list(), def_args)
+        self.assertSequenceEqual(result.args, def_args)
+
+    @parameterized.expand([
+        ('Prop0Args();', [], None),
+        ('Prop1Arg(1);', [1], None),
+        ('Prop2Args(1, 2);', [1, 2], None),
+        ('Instance0ArgsEmpty() { }', [], []),
+        ('Instance1ArgEmpty("FOOBAR") { }', ['FOOBAR'], []),
+        ('Instance0ArgsSingle() { Nested(0); }', [], [([0], None)]),
+        ('Instance1ArgSingle("FOOBAR") { Nested(0); }', ['FOOBAR'], [([0], None)]),
+    ])
+    def test_instance_parsing(self, string, args, body):
+        result = instance.parse_string(string)[0]
+        self.assertIsInstance(result, ConfigInstance)
+        self.assertTrue(bool(result.name))
+        self.assertListEqual(result.args, args)
+        if body:
+            self.assertNotEqual(len(result.body), 0)
+            for i, nested in enumerate(body):
+                self.assertListEqual(result.body[i].args, nested[0])

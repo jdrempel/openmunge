@@ -1,8 +1,9 @@
-import os
-import sys
+from functools import partial
 
 import pyparsing as pp
 from pyparsing import pyparsing_common as ppc
+
+from mungers.ast.ConfigInstance import ConfigInstance
 
 Lit = pp.Literal
 Opt = pp.Optional
@@ -19,12 +20,13 @@ args = DList(value)
 definition = name + LPAREN + pp.ZeroOrMore(args)('args') + RPAREN
 property_def = pp.Group(definition + SEMI)
 instance = Fwd()
-object_body = pp.Group(instance[1, ...])('body')
+object_body = instance[1, ...]('body')
 object_def = pp.Group(definition + LBRACE + Opt(object_body) + RBRACE)
-instance <<= (property_def | object_def)
-config_doc = instance[0, ...]
+instance <<= (property_def.set_parse_action(ConfigInstance.build_property) |
+              object_def.set_parse_action(ConfigInstance.build_instance))
 
 
-def parse_config_file(file):
+def parse_config_file(file, doc_cls):
+    config_doc = instance[...].set_parse_action(doc_cls.build)
     with open(file, 'r') as f:
-        return config_doc.parse_string(f.read(), parse_all=True)
+        return config_doc.parse_string(f.read(), parse_all=True)[0]

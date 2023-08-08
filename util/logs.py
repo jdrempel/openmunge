@@ -3,7 +3,7 @@ import logging
 
 def setup_logger(name: str, file=None, level='INFO'):
     logger = logging.getLogger(name)
-    logger.setLevel('INFO')
+    logger.setLevel(level)
 
     date_fmt = '%Y-%m-%d %H:%M:%S'
     formatter = logging.Formatter('%(asctime)s\t%(name)-16s\t%(levelname)8s:\t%(message)s', datefmt=date_fmt)

@@ -5,7 +5,7 @@ from abc import abstractmethod
 
 from core.ScriptBase import ScriptBase
 from util.constants import Platform, ALL_PLATFORMS
-from util.string_util import pretty_print_args
+from util.string_util import str_in_i
 
 
 class MungerBase(ScriptBase):
@@ -41,6 +41,24 @@ class MungerBase(ScriptBase):
         group.add_argument('-H', '--hash-strings',
                            action='store_true',
                            help='When specified, hash strings as magic numbers in the munged files.')
+
+        group = self.arg_parser.add_argument_group('Global Options')
+        group.add_argument('-ll', '--log-level',
+                           type=str,
+                           choices=('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'),
+                           default='INFO',
+                           help='The minimum level of log message to be displayed. '
+                                'Choices: %(choices)s. Default: %(default)s.')
+
+    def get_input_files(self):
+        all_source_files = self.args.source_dir.glob('**/*')
+        result = []
+        for input_file_pattern in self.args.input_files:
+            result.extend([file for file in all_source_files if str_in_i(file.suffix, input_file_pattern) and
+                           file.is_file()])
+        str_result = list(map(str, result))
+        self.logger.debug('Input files:\n\t- {}'.format('\n\t- '.join(str_result)))
+        return sorted(result)
 
     def start(self):
         self.logger.info('Starting {}...'.format(self.name))

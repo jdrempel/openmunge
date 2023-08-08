@@ -38,6 +38,12 @@ class BatchScriptBase(ScriptBase):
                            required=True,
                            help='The location of the project data to be munged. This should point to the data_ABC '
                                 'directory (assuming ABC is the 3-letter code for the project).')
+        group.add_argument('-ll', '--log-level',
+                           type=str,
+                           choices=('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'),
+                           default='INFO',
+                           help='The minimum level of log message to be displayed. '
+                                'Choices: %(choices)s. Default: %(default)s.')
 
     def start(self):
         self.job_runner = JobRunner()

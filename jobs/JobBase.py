@@ -85,6 +85,7 @@ class JobBase(ABC):
         cmd.append(self.get_task())
 
         args = get_global_args()
+        cmd.extend(['--log-level', args.log_level])
         cmd.extend(['--project-dir', str(args.project_dir)])
         cmd.extend(['--platform', args.platform])
         cmd.extend(['--source-dir', str(self.source_dir)])

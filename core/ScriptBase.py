@@ -33,6 +33,10 @@ class ScriptBase:
         setup_global_args(self.args)
         setup_global_config()
 
+        self.logger.setLevel(self.args.log_level)
+        for handler in self.logger.handlers:
+            handler.setLevel(self.args.log_level)
+
     @abstractmethod
     def start(self):
         ...

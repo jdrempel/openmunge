@@ -80,6 +80,12 @@ def parse_args():
                        default=pathlib.Path.home() / '.mungerc',
                        help='Location of a config file to use for global options. Command-line options take precedent '
                             'over option values read from this file. Default: %(default)s.')
+    group.add_argument('-ll', '--log-level',
+                       type=str,
+                       choices=('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'),
+                       default='INFO',
+                       help='The minimum level of log message to be displayed. '
+                            'Choices: %(choices)s. Default: %(default)s.')
     group.add_argument('--swbf-path',
                        type=pathlib.Path,
                        default=None,
