@@ -1,5 +1,5 @@
 from batch.BatchScriptBase import BatchScriptBase
-from jobs.MungeJob import WorldMungeJob
+from jobs.MungeJob import WorldMungeJob, PathMungeJob
 
 
 class WorldBatchScript(BatchScriptBase):
@@ -9,6 +9,7 @@ class WorldBatchScript(BatchScriptBase):
     def run(self):
         base_args = (self.args.source_dir, self.args.project_dir, self.args.platform)
         batch = [
+            PathMungeJob(['$*.pth'], *base_args),
             WorldMungeJob(['$*.lyr'], *base_args),
             WorldMungeJob(['$*.wld'], *base_args),
         ]

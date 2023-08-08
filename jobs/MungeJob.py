@@ -37,6 +37,12 @@ class OdfMungeJob(MungeJob):
         return 'odf'
 
 
+class PathMungeJob(MungeJob):
+    @staticmethod
+    def get_task():
+        return 'path'
+
+
 class WorldMungeJob(MungeJob):
     @staticmethod
     def get_task():
