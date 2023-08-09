@@ -1,7 +1,15 @@
 from abc import ABC
+from typing import Protocol
+
+
+class VisitorProtocol(Protocol):
+    def visit_enter(self, node):
+        ...
+
+    def visit_leave(self, node):
+        ...
 
 
 class AstNode(ABC):
-    def __init__(self, name=None):
-        self.name = name
-        self.size = 0
+    def accept(self, visitor: VisitorProtocol):
+        return visitor.visit_enter(self)

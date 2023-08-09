@@ -3,3 +3,8 @@ __pycache__/
 
 *.log
 *.pyc
+*.bin
+*.path
+*.txt
+
+poetry.lock
