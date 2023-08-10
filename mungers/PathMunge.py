@@ -23,10 +23,11 @@ class PathMunge(MungerBase):
             config_name = file_path.stem
             parse_data.name = config_name
             config_size, config_binary = parse_data.to_binary()
-            total_config_size += config_size
+            total_config_size += config_size  # TODO figure out why this is wrong
             raw_binaries.extend(config_binary)
-        pack_str += '{}s'.format(total_config_size)
-        binary = struct.pack(pack_str, b'ucfb', total_config_size, raw_binaries)
+        pack_str += '{}s'.format(len(raw_binaries))
+        binary = struct.pack(pack_str, b'ucfb', len(raw_binaries), raw_binaries)
         root_config_file_name = pathlib.Path(self.args.source_dir.stem).with_suffix('.path')
         with open(root_config_file_name, 'wb') as f:
-            f.write(binary)
+            num_written = f.write(binary)
+            self.logger.info('Wrote {nbytes} bytes to {path}'.format(nbytes=num_written, path=root_config_file_name))

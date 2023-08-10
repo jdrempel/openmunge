@@ -53,17 +53,12 @@ class ConfigInstance(AstNode):
         nargs = len(self.args)
         args_bytes = bytearray()
         arg_fmt_str = 'B'
-        #args_bytes.extend([nargs])
 
-        first = True
         args_size = 0
         for arg in self.args:
             arg_binary = arg.to_binary()
             args_bytes.extend(arg_binary)
             arg_size = len(arg_binary)
-            #if first:
-            #    first = False
-            #    arg_size += 1
             args_size += arg_size
         if args_size:
             if isinstance(self.args[-1], FloatArg):  # Heuristic, not sure if you can have combinations of str, float
@@ -106,4 +101,6 @@ class ConfigInstance(AstNode):
         else:
             binary = struct.pack(fmt_str, header, size, name, nargs, args_bytes)
         total_size = ser.get_padded_len(size + 8)
+        if self.body is not None and len(body_bytes):
+            total_size += len(body_bytes)
         return total_size, binary

@@ -50,7 +50,7 @@ class FloatArg(Arg):
 class StrArg(Arg):
     def to_binary(self) -> bytes:
         annotated_padded_value = struct.pack(
-            '<II{}s'.format(self.serializer.get_padded_len(len(self.value)+1)),
+            '<II{}s'.format(len(self.value)+1),
             4, len(self.value)+1, bytes(self.value, encoding='ascii'))
         return annotated_padded_value
 

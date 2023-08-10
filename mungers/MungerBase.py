@@ -43,6 +43,11 @@ class MungerBase(ScriptBase):
                            help='When specified, hash strings as magic numbers in the munged files.')
 
         group = self.arg_parser.add_argument_group('Global Options')
+        group.add_argument('-P', '--project-dir',
+                           type=pathlib.Path,
+                           required=True,
+                           help='The location of the project data to be munged. This should point to the data_ABC '
+                                'directory (assuming ABC is the 3-letter code for the project).')
         group.add_argument('-ll', '--log-level',
                            type=str,
                            choices=('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'),
