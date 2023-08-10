@@ -1,6 +1,7 @@
 import struct
 
 from core.util.hashing import fnv1a_hash
+from mungers.ast.Args import Arg, FloatArg, StrArg
 from mungers.ast.AstNode import AstNode
 from mungers.serializers.BinarySerializer import BinarySerializer
 
@@ -8,7 +9,10 @@ from mungers.serializers.BinarySerializer import BinarySerializer
 class ConfigInstance(AstNode):
     def __init__(self, name, args):
         self.name = name
-        self.args = args
+        if all([not isinstance(x, Arg) for x in args]):
+            self.args = [FloatArg(x) if isinstance(x, (int, float)) else StrArg(x) for x in args]
+        else:
+            self.args = args
         self.body = None
 
     @staticmethod
@@ -48,28 +52,30 @@ class ConfigInstance(AstNode):
 
         nargs = len(self.args)
         args_bytes = bytearray()
-        arg_fmt_str = ''
-        args_bytes.extend([nargs])
+        arg_fmt_str = 'B'
+        #args_bytes.extend([nargs])
 
         first = True
         args_size = 0
         for arg in self.args:
-            arg_size = ser.serialize(arg)
-            if first:
-                first = False
-                arg_size += 1
-            if isinstance(arg, (int, float)):
-                arg_ = float(arg)
-                args_bytes.extend(struct.pack('<f', arg_))
-            elif isinstance(arg, str):
-                arg_ = bytes(arg, encoding='ascii')
-                arg_len = len(arg_)+1
-                padded_len = ser.get_padded_len(arg_len)
-                args_bytes.extend(struct.pack('<{}s'.format(padded_len), arg_))
+            arg_binary = arg.to_binary()
+            args_bytes.extend(arg_binary)
+            arg_size = len(arg_binary)
+            #if first:
+            #    first = False
+            #    arg_size += 1
             args_size += arg_size
-        arg_fmt_str += '{}s'.format(args_size)
+        if args_size:
+            if isinstance(self.args[-1], FloatArg):  # Heuristic, not sure if you can have combinations of str, float
+                args_bytes.extend(b'\x00'*4)
+                args_size += 4
+            arg_fmt_str += '{}s'.format(args_size)
+        else:
+            args_bytes.extend(b'\x00'*4)
+            args_size += 4
+            arg_fmt_str += '{}s'.format(args_size)
         fmt_str += arg_fmt_str
-        arg_padding = ser.get_padded_len(len(args_bytes), min_len=12) - len(args_bytes)
+        arg_padding = ser.get_padded_len(len(args_bytes)+1) - len(args_bytes) - 1  # -1 to account for nargs
         fmt_str += 'x'*arg_padding
 
         body_bytes = bytearray()
@@ -90,14 +96,14 @@ class ConfigInstance(AstNode):
 
         header = b'DATA'
         name = fnv1a_hash(bytes(self.name, encoding='ascii'))
-        size = len(name) + ser.get_padded_len(len(args_bytes)) + 1  # +1 to account for nargs
+        size = len(name) + len(args_bytes) + 1
         if self.body is not None:
-            size += len(body_bytes)
+            #size += len(body_bytes)
             if len(body_bytes):
-                binary = struct.pack(fmt_str, header, size, name, args_bytes, body_bytes)
+                binary = struct.pack(fmt_str, header, size, name, nargs, args_bytes, body_bytes)
             else:
-                binary = struct.pack(fmt_str, header, size, name, args_bytes)
+                binary = struct.pack(fmt_str, header, size, name, nargs, args_bytes)
         else:
-            binary = struct.pack(fmt_str, header, size, name, args_bytes)
+            binary = struct.pack(fmt_str, header, size, name, nargs, args_bytes)
         total_size = ser.get_padded_len(size + 8)
         return total_size, binary

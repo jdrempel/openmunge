@@ -1,4 +1,3 @@
-import logging
 from abc import abstractmethod
 
 from util.config import setup_global_args, setup_global_config

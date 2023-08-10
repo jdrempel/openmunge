@@ -37,24 +37,24 @@ class ConfigParserTest(unittest.TestCase):
         self.assertEqual(result.name, string)
 
     @parameterized.expand([
-        ('0', int),
-        ('1', int),
-        ('-1', int),
-        ('1.0001', float),
-        ('-0.2001', float),
-        ('1E5', float),
-        ('"Hermite"', str),
-        ('"Hello, world!"', str),
+        ('0', FloatArg),
+        ('1', FloatArg),
+        ('-1', FloatArg),
+        ('1.0001', FloatArg),
+        ('-0.2001', FloatArg),
+        ('1E5', FloatArg),
+        ('"Hermite"', StrArg),
+        ('"Hello, world!"', StrArg),
     ])
     def test_value_parsing(self, string, type_):
         result = value.parse_string(string)
         self.assertIsInstance(result[0], type_)
 
     @parameterized.expand([
-        ('7', (int,)),
-        ('7,1.0', (int, float)),
-        ('7, 1.0', (int, float)),
-        ('"thing", 1e4, 22', (str, float, int)),
+        ('7', (FloatArg,)),
+        ('7,1.0', (FloatArg, FloatArg)),
+        ('7, 1.0', (FloatArg, FloatArg)),
+        ('"thing", 1e4, 22', (StrArg, FloatArg, FloatArg)),
     ])
     def test_args_parsing(self, string, types):
         result = args.parse_string(string)
@@ -63,33 +63,33 @@ class ConfigParserTest(unittest.TestCase):
 
     @parameterized.expand([
         ('Empty()', 'Empty', []),
-        ('PosInt(1)', 'PosInt', [1]),
-        ('NegInt(-2)', 'NegInt', [-2]),
+        ('PosInt(1)', 'PosInt', [1.0]),
+        ('NegInt(-2)', 'NegInt', [-2.0]),
         ('Float(3.14)', 'Float', [3.14]),
         ('EngNot(1.2E-5)', 'EngNot', [1.2e-5]),
-        ('IntFloat(1, 2.0)', 'IntFloat', [1, 2.0]),
+        ('IntFloat(1, 2.0)', 'IntFloat', [1.0, 2.0]),
         ('FloatStr(2.0, "Things")', 'FloatStr', [2.0, 'Things']),
     ])
     def test_definition_parsing(self, string, def_name, def_args):
         result = definition.parse_string(string)
         self.assertSequenceEqual(result.name, def_name)
-        self.assertSequenceEqual(result.args, def_args)
+        self.assertSequenceEqual([arg.value for arg in result.args], def_args)
 
     @parameterized.expand([
         ('Prop0Args();', [], None),
-        ('Prop1Arg(1);', [1], None),
-        ('Prop2Args(1, 2);', [1, 2], None),
+        ('Prop1Arg(1);', [1.0], None),
+        ('Prop2Args(1, 2);', [1.0, 2.0], None),
         ('Instance0ArgsEmpty() { }', [], []),
         ('Instance1ArgEmpty("FOOBAR") { }', ['FOOBAR'], []),
-        ('Instance0ArgsSingle() { Nested(0); }', [], [([0], None)]),
-        ('Instance1ArgSingle("FOOBAR") { Nested(0); }', ['FOOBAR'], [([0], None)]),
+        ('Instance0ArgsSingle() { Nested(0); }', [], [([0.0], None)]),
+        ('Instance1ArgSingle("FOOBAR") { Nested(0); }', ['FOOBAR'], [([0.0], None)]),
     ])
-    def test_instance_parsing(self, string, args, body):
+    def test_instance_parsing(self, string, args_, body):
         result = instance.parse_string(string)[0]
         self.assertIsInstance(result, ConfigInstance)
         self.assertTrue(bool(result.name))
-        self.assertListEqual(result.args, args)
+        self.assertListEqual([arg.value for arg in result.args], args_)
         if body:
             self.assertNotEqual(len(result.body), 0)
             for i, nested in enumerate(body):
-                self.assertListEqual(result.body[i].args, nested[0])
+                self.assertListEqual([arg.value for arg in result.body[i].args], nested[0])

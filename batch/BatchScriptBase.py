@@ -1,7 +1,6 @@
 import argparse
 import pathlib
 import sys
-import traceback
 from abc import abstractmethod
 
 from core.ScriptBase import ScriptBase

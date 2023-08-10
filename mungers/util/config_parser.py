@@ -1,8 +1,7 @@
-from functools import partial
-
 import pyparsing as pp
 from pyparsing import pyparsing_common as ppc
 
+from mungers.ast.Args import FloatArg, StrArg
 from mungers.ast.ConfigInstance import ConfigInstance
 
 Lit = pp.Literal
@@ -14,8 +13,7 @@ DList = pp.DelimitedList
 LPAREN, RPAREN, LBRACE, RBRACE, SEMI, COMMA = map(Sup, map(Lit, '(){};,'))
 
 name = ppc.identifier('name')
-value = ppc.number | pp.quoted_string
-pp.quoted_string.add_parse_action(pp.remove_quotes)
+value = ppc.fnumber.add_parse_action(FloatArg.build) | pp.quoted_string.add_parse_action(pp.remove_quotes, StrArg.build)
 args = DList(value)
 definition = name + LPAREN + pp.ZeroOrMore(args)('args') + RPAREN
 property_def = pp.Group(definition + SEMI)

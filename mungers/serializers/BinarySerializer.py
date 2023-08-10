@@ -1,7 +1,3 @@
-import struct
-from typing import Sequence
-
-
 class BinarySerializer:
     U32_SZ = 4
 
