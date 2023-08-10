@@ -4,6 +4,9 @@ from core.util.hashing import fnv1a_hash
 from mungers.ast.Args import Arg, FloatArg, StrArg
 from mungers.ast.AstNode import AstNode
 from mungers.serializers.BinarySerializer import BinarySerializer
+from util.config import get_global_args
+from util.constants import ALL_PLATFORMS
+from util.string_util import strcmp_i
 
 
 class ConfigInstance(AstNode):
@@ -24,7 +27,19 @@ class ConfigInstance(AstNode):
             args = tok.args or []
         inst = ConfigInstance(tok.name, args)
         if tok.body:
-            inst.body = tok.body.as_list()
+            args = get_global_args()
+            # Not as simple as just taking the body, need to expand platform conditional macros
+            post_macro_body = []
+            for x in tok.body.as_list():
+                lower_name = x.name.lower()
+                if lower_name in ALL_PLATFORMS:
+                    if strcmp_i(lower_name, args.platform) and x.body is not None:
+                        for child in x.body:
+                            post_macro_body.append(child)
+                else:
+                    post_macro_body.append(x)
+            inst.body = post_macro_body
+
         elif force_body:
             inst.body = []
         return inst
