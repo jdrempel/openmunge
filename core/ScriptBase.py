@@ -29,6 +29,7 @@ class ScriptBase:
             self.args, self.job_args = self.arg_parser.parse_known_args()
         else:
             self.args, self.job_args = self.arg_parser.parse_known_args(args=args)
+
         setup_global_args(self.args)
         setup_global_config()
 
