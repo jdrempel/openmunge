@@ -2,6 +2,7 @@ import pyparsing as pp
 from pyparsing import pyparsing_common as ppc
 
 from mungers.ast.Args import FloatArg, StrArg
+from mungers.ast.Config import Config
 from mungers.ast.ConfigInstance import ConfigInstance
 
 Lit = pp.Literal
@@ -24,7 +25,7 @@ instance <<= (property_def.set_parse_action(ConfigInstance.build_property) |
               object_def.set_parse_action(ConfigInstance.build_instance))
 
 
-def parse_config_file(file, doc_cls):
+def parse_config_file(file, doc_cls=Config):
     config_doc = instance[...].set_parse_action(doc_cls.build)
     with open(file, 'r') as f:
         return config_doc.parse_string(f.read(), parse_all=True)[0]

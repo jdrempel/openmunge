@@ -93,7 +93,6 @@ class ConfigInstance(AstNode):
         name = fnv1a_hash(bytes(self.name, encoding='ascii'))
         size = len(name) + len(args_bytes) + 1
         if self.body is not None:
-            #size += len(body_bytes)
             if len(body_bytes):
                 binary = struct.pack(fmt_str, header, size, name, nargs, args_bytes, body_bytes)
             else:

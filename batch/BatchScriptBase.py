@@ -47,7 +47,8 @@ class BatchScriptBase(ScriptBase):
     def start(self):
         self.job_runner = JobRunner()
         self.logger.info('Starting {}...'.format(self.name))
-        self.logger.info('{name} Config:\n\tArgs: {args}'.format(name=self.name, args=' '.join(sys.argv)))
+        self.logger.info('{name} Setup:\n\tConfig File: {config}\n\tArgs: {args}'
+                         .format(name=self.name, config=None,args=' '.join(sys.argv)))
         try:
             self.run()
         except Exception as e:

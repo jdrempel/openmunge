@@ -1,10 +1,9 @@
 .idea/
 __pycache__/
+_outputs/
 
 *.log
 *.pyc
-*.bin
-*.path
 *.txt
 
 poetry.lock

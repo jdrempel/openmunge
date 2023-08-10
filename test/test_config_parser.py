@@ -2,7 +2,6 @@ import pathlib
 import unittest
 from parameterized import parameterized
 
-from mungers.ast.PathConfig import PathConfig
 from mungers.util.config_parser import *
 
 
@@ -24,8 +23,8 @@ class ConfigParserTest(unittest.TestCase):
         The correctness of the parse results will be judged in a higher-level test.
         """
         data_file = self.data_dir / filename
-        parse_result = parse_config_file(data_file, PathConfig)
-        self.assertIsInstance(parse_result, PathConfig)
+        parse_result = parse_config_file(data_file)
+        self.assertIsInstance(parse_result, Config)
 
     @parameterized.expand([
         ('Path',),

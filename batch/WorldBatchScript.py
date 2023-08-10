@@ -1,5 +1,5 @@
 from batch.BatchScriptBase import BatchScriptBase
-from jobs.MungeJob import WorldMungeJob, PathMungeJob
+from jobs.MungeJob import WorldMungeJob, ConfigMungeJob
 
 
 class WorldBatchScript(BatchScriptBase):
@@ -8,11 +8,35 @@ class WorldBatchScript(BatchScriptBase):
 
     def run(self):
         base_args = (self.args.source_dir, self.args.project_dir, self.args.platform)
-        batch = [
-            PathMungeJob(['$*.pth'], *base_args),
+
+        batch = []
+
+        batch.extend([
+            # OdfMungeJob(['$*.odf'], *base_args),
+            # ModelMungeJob(['$*.msh'], *base_args),
+            # TextureMungeJob(['$*.tga', '$*.pic'], *base_args),
+            # TerrainMungeJob(['$*.ter'], *base_args),
             WorldMungeJob(['$*.lyr'], *base_args),
             WorldMungeJob(['$*.wld'], *base_args),
-        ]
+        ])
+
+        path_jobs = []
+        for wld_file in self.args.source_dir.glob('**/*.wld'):
+            path_jobs.append(ConfigMungeJob(['$*.pth'], *base_args, output_file=wld_file.stem.lower(),
+                                            extension='.path', chunk_id='path'))
+        batch.extend(path_jobs)
+
+        batch.extend([
+            # PathPlanningMungeJob(['$*.pln'], *base_args),
+            ConfigMungeJob(['$*.sky'], *base_args, chunk_id='sky'),
+            ConfigMungeJob(['$*.fx'], *base_args, extension='.envfx', chunk_id='fx'),
+            # ConfigMungeJob(['$*.prp'], *base_args, hash_strings=True, extension='.prop', chunk_id='prp'),
+            # ConfigMungeJob(['$*.bnd'], *base_args, hash_strings=True, extension='.boundary', chunk_id='bnd'),
+            # sound...
+            ConfigMungeJob(['$*.lgt'], *base_args, extension='.light', chunk_id='lght'),
+            ConfigMungeJob(['$*.pvs'], *base_args, extension='.povs', chunk_id='PORT'),
+        ])
+
         self.job_runner.add_batch(batch)
         self.job_runner.start()
         self.job_runner.wait()

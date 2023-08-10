@@ -25,12 +25,14 @@ class ConfigInstanceTest(unittest.TestCase):
         ('one str arg', ConfigInstance('Foo', ['Hermite']), None,
          b'DATA\x15\x00\x00\x00\xd7~\xf3\xa9\x01\x04\x00\x00\x00\x08\x00\x00\x00Hermite\x00\x00\x00\x00'),
         ('empty body', ConfigInstance('Foo', [3.14, 2.71, 1.41]), [],
-         b'DATA\x15\x00\x00\x00\xd7~\xf3\xa9\x03\xc3\xf5H@\xa4p-@\xe1z\xb4?\x00\x00\x00\x00\x00\x00\x00SCOP\x00\x00\x00\x00'),
+         b'DATA\x15\x00\x00\x00\xd7~\xf3\xa9\x03\xc3\xf5H@\xa4p-@\xe1z\xb4?\x00\x00\x00\x00\x00\x00\x00'
+         b'SCOP\x00\x00\x00\x00'),
     ])
     def test_to_binary(self, _name: str, inst: ConfigInstance, body, expected_binary):
         self.maxDiff = None
         if body is not None:
             inst.body = body
         size, binary = inst.to_binary()
+
         self.assertEqual(size, self.serializer.get_padded_len(struct.unpack('<I', binary[4:8])[0] + 8))
         self.assertSequenceEqual(binary, expected_binary)
