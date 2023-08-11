@@ -1,13 +1,17 @@
+import argparse
 import pathlib
 import unittest
 from parameterized import parameterized
 
 from mungers.util.config_parser import *
+from util.config import setup_global_args, setup_global_config
 
 
 class ConfigParserTest(unittest.TestCase):
     def setUp(self) -> None:
         self.data_dir = self.get_data_dir('data')
+        setup_global_config()
+        setup_global_args(argparse.Namespace(platform='pc'))
 
     @staticmethod
     def get_data_dir(path) -> pathlib.Path:

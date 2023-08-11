@@ -15,6 +15,9 @@ class Globals:
 g = Globals()
 
 
+# TODO *******
+# TODO Use a ChainMap to have a fallback mechanism for getting args -> config -> envvars -> defaults
+# TODO *******
 def get_global_args():
     if not g.initialized:
         raise ValueError('Globals have not yet been initialized')

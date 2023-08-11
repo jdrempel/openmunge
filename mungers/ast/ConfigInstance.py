@@ -2,14 +2,13 @@ import struct
 
 from core.util.hashing import fnv1a_hash
 from mungers.ast.Args import Arg, FloatArg, StrArg
-from mungers.ast.AstNode import AstNode
 from mungers.serializers.BinarySerializer import BinarySerializer
 from util.config import get_global_args
 from util.constants import ALL_PLATFORMS
 from util.string_util import strcmp_i
 
 
-class ConfigInstance(AstNode):
+class ConfigInstance:
     def __init__(self, name, args):
         self.name = name
         if all([not isinstance(x, Arg) for x in args]):

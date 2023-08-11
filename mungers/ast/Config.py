@@ -1,9 +1,8 @@
 import struct
 from core.util.hashing import fnv1a_hash
-from mungers.ast.AstNode import AstNode
 
 
-class Config(AstNode):
+class Config:
     def __init__(self, name=None):
         self._id = None
         self.name = name

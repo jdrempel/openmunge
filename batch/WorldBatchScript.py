@@ -16,8 +16,8 @@ class WorldBatchScript(BatchScriptBase):
             # ModelMungeJob(['$*.msh'], *base_args),
             # TextureMungeJob(['$*.tga', '$*.pic'], *base_args),
             # TerrainMungeJob(['$*.ter'], *base_args),
-            WorldMungeJob(['$*.lyr'], *base_args),
-            WorldMungeJob(['$*.wld'], *base_args),
+            WorldMungeJob(['$*.lyr'], *base_args),  # All non-base layers
+            WorldMungeJob(['$*.wld'], *base_args),  # The base layer, ties it all together
         ])
 
         path_jobs = []

@@ -48,8 +48,6 @@ class ConfigMunge(MungerBase):
         file_parse_data_map = {input_file: parse_config_file(input_file) for input_file in input_files}
 
         total_config_size = 0
-        binary = bytearray()
-        binary.extend(b'ucfb')
         pack_str = '<4sI'
         raw_binaries = bytearray()
 
