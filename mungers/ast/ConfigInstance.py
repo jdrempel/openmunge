@@ -30,7 +30,7 @@ class ConfigInstance:
             # Not as simple as just taking the body, need to expand platform conditional macros
             post_macro_body = []
             for x in tok.body.as_list():
-                lower_name = x.name.lower()
+                lower_name = str(x.name).lower()
                 if lower_name in ALL_PLATFORMS:
                     if strcmp_i(lower_name, args.platform) and x.body is not None:
                         for child in x.body:
@@ -41,6 +41,9 @@ class ConfigInstance:
 
         elif force_body:
             inst.body = []
+        final_args, final_body = inst.name(inst)  # TODO is there a nicer way of calling this?
+        inst.args = final_args
+        inst.body = final_body
         return inst
 
     @staticmethod

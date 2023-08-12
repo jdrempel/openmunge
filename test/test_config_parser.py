@@ -37,7 +37,7 @@ class ConfigParserTest(unittest.TestCase):
     def test_name_parsing(self, string):
         result = name.parse_string(string)
         self.assertTrue(hasattr(result, 'name'))
-        self.assertEqual(result.name, string)
+        self.assertEqual(str(result.name), string)
 
     @parameterized.expand([
         ('0', FloatArg),
@@ -75,7 +75,7 @@ class ConfigParserTest(unittest.TestCase):
     ])
     def test_definition_parsing(self, string, def_name, def_args):
         result = definition.parse_string(string)
-        self.assertSequenceEqual(result.name, def_name)
+        self.assertSequenceEqual(str(result.name), def_name)
         self.assertSequenceEqual([arg.value for arg in result.args], def_args)
 
     @parameterized.expand([
@@ -96,3 +96,15 @@ class ConfigParserTest(unittest.TestCase):
             self.assertNotEqual(len(result.body), 0)
             for i, nested in enumerate(body):
                 self.assertListEqual([arg.value for arg in result.body[i].args], nested[0])
+
+    def test_object_parsing(self):
+        string = '''
+        Object("base_ctrl_1", "com_bldg_controlzone", 335192664)
+        {
+          ChildRotation(1.000, -0.000, -0.000, -0.000);
+          SeqNo(1234567890);
+          NetworkId(1);
+          ChildPosition(1.23, 4.56, 7.89);
+        }'''
+        result = instance.parse_string(string)[0]
+        pass
