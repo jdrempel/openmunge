@@ -41,9 +41,6 @@ class ConfigInstance:
 
         elif force_body:
             inst.body = []
-        final_args, final_body = inst.name(inst)  # TODO is there a nicer way of calling this?
-        inst.args = final_args
-        inst.body = final_body
         return inst
 
     @staticmethod

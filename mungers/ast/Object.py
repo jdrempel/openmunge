@@ -7,10 +7,9 @@ class Object(Property):
     @staticmethod
     def build(tok):
         inst = Object()
-        inst.name = tok[0]
+        inst.name = tok[0].name
+        inst.label = tok[0].args[0]
+        inst.class_ = tok[0].args[1]
+        body = tok[0].body.as_list() or []
+        inst.body = [item for item in body if str(item.name) not in Object.CHILD_BLACKLIST]
         return inst
-
-    def __call__(self, owner):
-        args = owner.args[:2]  # Cut out the sequence number
-        body = [item for item in owner.body if str(item.name) not in Object.CHILD_BLACKLIST]
-        return args, body

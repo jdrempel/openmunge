@@ -21,21 +21,31 @@ specials = (
     ('Hint', Object),  # TODO
     ('Object', Object),
 )
-special_keys = pp.MatchFirst(Key(special[0]).set_parse_action(special[1].build) for special in specials)
+special_keys = pp.MatchFirst([Key(s[0]) for s in specials])
 
-name = (special_keys | ppc.identifier.set_parse_action(Property.build))('name')
+args = Fwd()
+property_def = Fwd()
+
+object_signature = Key('Object')('name') + LPAREN + pp.ZeroOrMore(args)('args') + RPAREN
+object_body = property_def[1, ...]('body')
+object_def = pp.Group(object_signature + LBRACE + Opt(object_body) + RBRACE)
+
+name = ~special_keys + ppc.identifier('name')
 value = ppc.fnumber.add_parse_action(FloatArg.build) | pp.quoted_string.add_parse_action(pp.remove_quotes, StrArg.build)
-args = DList(value)
-definition = name + LPAREN + pp.ZeroOrMore(args)('args') + RPAREN
-property_def = pp.Group(definition + SEMI)
-instance = Fwd()
-object_body = instance[1, ...]('body')
-object_def = pp.Group(definition + LBRACE + Opt(object_body) + RBRACE)
-instance <<= (property_def.set_parse_action(ConfigInstance.build_property) |
-              object_def.set_parse_action(ConfigInstance.build_instance))
+args <<= DList(value)
+property_signature = name + LPAREN + pp.ZeroOrMore(args)('args') + RPAREN
+property_def <<= pp.Group(property_signature + SEMI)
+property_ = Fwd()
+scope_body = property_[1, ...]('body')
+scoped_def = pp.Group(property_signature + LBRACE + Opt(scope_body) + RBRACE)
+property_ <<= (property_def.set_parse_action(ConfigInstance.build_property) |
+               scoped_def.set_parse_action(ConfigInstance.build_instance))
+
+
+doc_entry = object_def.set_parse_action(Object.build) | property_
 
 
 def parse_config_file(file, doc_cls=Config):
-    config_doc = instance[...].set_parse_action(doc_cls.build)
+    config_doc = doc_entry[...].set_parse_action(doc_cls.build)
     with open(file, 'r') as f:
         return config_doc.parse_string(f.read(), parse_all=True)[0]

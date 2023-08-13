@@ -74,7 +74,7 @@ class ConfigParserTest(unittest.TestCase):
         ('FloatStr(2.0, "Things")', 'FloatStr', [2.0, 'Things']),
     ])
     def test_definition_parsing(self, string, def_name, def_args):
-        result = definition.parse_string(string)
+        result = property_signature.parse_string(string)
         self.assertSequenceEqual(str(result.name), def_name)
         self.assertSequenceEqual([arg.value for arg in result.args], def_args)
 
@@ -88,7 +88,7 @@ class ConfigParserTest(unittest.TestCase):
         ('Instance1ArgSingle("FOOBAR") { Nested(0); }', ['FOOBAR'], [([0.0], None)]),
     ])
     def test_instance_parsing(self, string, args_, body):
-        result = instance.parse_string(string)[0]
+        result = property_.parse_string(string)[0]
         self.assertIsInstance(result, ConfigInstance)
         self.assertTrue(bool(result.name))
         self.assertListEqual([arg.value for arg in result.args], args_)
@@ -106,5 +106,13 @@ class ConfigParserTest(unittest.TestCase):
           NetworkId(1);
           ChildPosition(1.23, 4.56, 7.89);
         }'''
-        result = instance.parse_string(string)[0]
+        result = object_def.parse_string(string)[0]
+
+        self.assertListEqual(result.args, [])
+        self.assertSequenceEqual(str(result.label), 'base_ctrl_1')
+        self.assertSequenceEqual(str(result.class_), 'com_bldg_controlzone')
+
+        self.assertEqual(len(result.body), 2)
+        self.assertSequenceEqual(result.body[0].name, 'ChildRotation')
+        self.assertSequenceEqual(result.body[1].name, 'ChildPosition')
         pass

@@ -41,6 +41,9 @@ class FloatArg(Arg):
     def to_binary(self) -> bytes:
         return struct.pack('<f', self.value)
 
+    def __float__(self):
+        return float(self.value)
+
     @staticmethod
     def build(tok):
         inst = FloatArg(tok[0])
@@ -53,6 +56,12 @@ class StrArg(Arg):
             '<II{}s'.format(len(self.value)+1),
             4, len(self.value)+1, bytes(self.value, encoding='ascii'))
         return annotated_padded_value
+
+    def __repr__(self):
+        return '{cls}({val})'.format(cls=self.__class__.__name__, val=self.value)
+
+    def __str__(self):
+        return str(self.value)
 
     @staticmethod
     def build(tok):

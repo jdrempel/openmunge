@@ -1,9 +1,8 @@
 class Property:
     def __init__(self):
         self.name = None
-
-    def __call__(self, owner):
-        return owner.args, owner.body
+        self.args = []
+        self.body = None
 
     def __str__(self):
         return str(self.name)
@@ -11,5 +10,7 @@ class Property:
     @staticmethod
     def build(tok):
         inst = Property()
-        inst.name = tok[0]
+        inst.name = tok.name
+        inst.args = tok.args or []
+        inst.body = tok.body or None
         return inst
