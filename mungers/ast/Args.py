@@ -57,6 +57,9 @@ class StrArg(Arg):
             4, len(self.value)+1, bytes(self.value, encoding='ascii'))
         return annotated_padded_value
 
+    def to_binary_no_annotation(self) -> bytes:
+        return struct.pack('<I{}s'.format(len(self.value)+1), len(self.value)+1, bytes(self.value, encoding='ascii'))
+
     def __repr__(self):
         return '{cls}({val})'.format(cls=self.__class__.__name__, val=self.value)
 

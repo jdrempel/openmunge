@@ -5,7 +5,7 @@ class Property:
         self.body = None
 
     def __str__(self):
-        return str(self.name)
+        return '{}({})'.format(self.__class__.__name__, str(self.name))
 
     @staticmethod
     def build(tok):
