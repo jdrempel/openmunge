@@ -3,7 +3,9 @@ import struct
 
 from mungers.MungerBase import MungerBase
 from mungers.ast.World import World
-from mungers.util.config_parser import parse_config_file
+
+from mungers.parsers.ConfigParser import ConfigParser
+from mungers.parsers.ParserOptions import ParserOptions
 
 CONFIG_SECTION_WHITELIST = {
     'Barrier',
@@ -28,9 +30,12 @@ class WorldMunge(MungerBase):
         if not input_files:
             self.logger.info('No input files were found. Stopping...')
             return
-
+        parser_options = ParserOptions(document_cls=World,
+                                       all_numbers_are_floats=False,
+                                       all_values_are_strings=True)
+        world_parser = ConfigParser(parser_options)
         self.logger.info('Parsing {} input files'.format(len(input_files)))
-        file_parse_data_map = {input_file: parse_config_file(input_file, doc_cls=World) for input_file in input_files}
+        file_parse_data_map = {input_file: world_parser.parse_file(input_file) for input_file in input_files}
 
         for file_path, parse_data in file_parse_data_map.items():
             parse_data.instances = [inst for inst in parse_data.instances if inst.name in CONFIG_SECTION_WHITELIST]

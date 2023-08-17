@@ -2,8 +2,6 @@ import struct
 
 from core.util.hashing import fnv1a_hash
 from core.util.math_util import quat_to_rotation_matrix, mangle_quat
-from mungers.ast.Args import StrArg
-from mungers.ast.ConfigInstance import ConfigInstance
 from mungers.ast.Property import Property
 from mungers.serializers.BinarySerializer import BinarySerializer
 
@@ -64,32 +62,27 @@ class Object(Property):
                                  b'TYPE', type_,
                                  b'NAME', name,
                                  b'XFRM', 48, *xfrm)
+        total_info_size = len(info_bytes)
+        fmt_str += '{}s'.format(total_info_size)
 
         body_bytes = bytearray()
-        body_fmt_str = '<4sI'  # SCOPsize
+        body_fmt_str = ''
         body_size = 0
-        for inst in self.body:
-            inst_size, inst_bytes = inst.to_binary()
-            body_bytes.extend(inst_bytes)
-            body_size += inst_size
-        if body_size:
-            body_fmt_str += '{}s'.format(body_size)
-            body_bytes = struct.pack(body_fmt_str, b'SCOP', body_size, body_bytes)
-        else:
-            body_bytes = struct.pack(body_fmt_str, b'SCOP', body_size)
+        for prop in self.body:
+            if str(prop.args[0]) == '':
+                continue
+            prop_size, prop_bytes = prop.to_binary()
+            body_bytes.extend(prop_bytes)
+            body_size += prop_size
+        body_fmt_str += '{}s'.format(body_size)
+        body_bytes = struct.pack(body_fmt_str,  body_bytes)
         body_fmt_str = '{}s'.format(len(body_bytes))
         fmt_str += body_fmt_str
 
         header = b'inst'
         name = fnv1a_hash(bytes(self.name, encoding='ascii'))
         size = len(name) + len(info_bytes) + 1
-        if self.body is not None:
-            if len(body_bytes):
-                binary = struct.pack(fmt_str, header, size, name, nargs, args_bytes, body_bytes)
-            else:
-                binary = struct.pack(fmt_str, header, size, name, nargs, args_bytes)
-        else:
-            binary = struct.pack(fmt_str, header, size, name, nargs, args_bytes)
+        binary = struct.pack(fmt_str, header, size, info_bytes, body_bytes)
         total_size = ser.get_padded_len(size + 8)
         if self.body is not None and len(body_bytes):
             total_size += len(body_bytes)

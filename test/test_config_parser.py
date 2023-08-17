@@ -3,7 +3,11 @@ import pathlib
 import unittest
 from parameterized import parameterized
 
-from mungers.util.config_parser import *
+from mungers.ast.Args import IntArg, FloatArg, StrArg
+from mungers.ast.Config import Config
+from mungers.ast.ConfigInstance import ConfigInstance
+from mungers.parsers.ConfigParser import ConfigParser
+from mungers.parsers.ParserOptions import ParserOptions
 from util.config import setup_global_args, setup_global_config
 
 
@@ -12,6 +16,9 @@ class ConfigParserTest(unittest.TestCase):
         self.data_dir = self.get_data_dir('data')
         setup_global_config()
         setup_global_args(argparse.Namespace(platform='pc'))
+        self.options = ParserOptions(document_cls=Config,
+                                     all_numbers_are_floats=True,
+                                     all_values_are_strings=False)
 
     @staticmethod
     def get_data_dir(path) -> pathlib.Path:
@@ -27,7 +34,8 @@ class ConfigParserTest(unittest.TestCase):
         The correctness of the parse results will be judged in a higher-level test.
         """
         data_file = self.data_dir / filename
-        parse_result = parse_config_file(data_file)
+        parser = ConfigParser(self.options)
+        parse_result = parser.parse_file(data_file)
         self.assertIsInstance(parse_result, Config)
 
     @parameterized.expand([
@@ -35,14 +43,15 @@ class ConfigParserTest(unittest.TestCase):
         ('Properties',),
     ])
     def test_name_parsing(self, string):
-        result = name.parse_string(string)
+        parser = ConfigParser(self.options)
+        result = parser.name.parse_string(string)
         self.assertTrue(hasattr(result, 'name'))
         self.assertEqual(str(result.name), string)
 
     @parameterized.expand([
-        ('0', FloatArg),
-        ('1', FloatArg),
-        ('-1', FloatArg),
+        ('0', IntArg),
+        ('1', IntArg),
+        ('-1', IntArg),
         ('1.0001', FloatArg),
         ('-0.2001', FloatArg),
         ('1E5', FloatArg),
@@ -50,17 +59,21 @@ class ConfigParserTest(unittest.TestCase):
         ('"Hello, world!"', StrArg),
     ])
     def test_value_parsing(self, string, type_):
-        result = value.parse_string(string)
+        self.options.all_numbers_are_floats = False
+        parser = ConfigParser(self.options)
+        result = parser.value.parse_string(string)
         self.assertIsInstance(result[0], type_)
 
     @parameterized.expand([
-        ('7', (FloatArg,)),
-        ('7,1.0', (FloatArg, FloatArg)),
-        ('7, 1.0', (FloatArg, FloatArg)),
-        ('"thing", 1e4, 22', (StrArg, FloatArg, FloatArg)),
+        ('7', (IntArg,)),
+        ('7,1.0', (IntArg, FloatArg)),
+        ('7, 1.0', (IntArg, FloatArg)),
+        ('"thing", 1e4, 22', (StrArg, FloatArg, IntArg)),
     ])
     def test_args_parsing(self, string, types):
-        result = args.parse_string(string)
+        self.options.all_numbers_are_floats = False
+        parser = ConfigParser(self.options)
+        result = parser.args.parse_string(string)
         for i, parsed_arg in enumerate(result):
             self.assertIsInstance(parsed_arg, types[i])
 
@@ -74,7 +87,8 @@ class ConfigParserTest(unittest.TestCase):
         ('FloatStr(2.0, "Things")', 'FloatStr', [2.0, 'Things']),
     ])
     def test_definition_parsing(self, string, def_name, def_args):
-        result = property_signature.parse_string(string)
+        parser = ConfigParser(self.options)
+        result = parser.property_signature.parse_string(string)
         self.assertSequenceEqual(str(result.name), def_name)
         self.assertSequenceEqual([arg.value for arg in result.args], def_args)
 
@@ -88,7 +102,8 @@ class ConfigParserTest(unittest.TestCase):
         ('Instance1ArgSingle("FOOBAR") { Nested(0); }', ['FOOBAR'], [([0.0], None)]),
     ])
     def test_instance_parsing(self, string, args_, body):
-        result = property_.parse_string(string)[0]
+        parser = ConfigParser(self.options)
+        result = parser.property_.parse_string(string)[0]
         self.assertIsInstance(result, ConfigInstance)
         self.assertTrue(bool(result.name))
         self.assertListEqual([arg.value for arg in result.args], args_)
@@ -106,13 +121,11 @@ class ConfigParserTest(unittest.TestCase):
           NetworkId(1);
           ChildPosition(1.23, 4.56, 7.89);
         }'''
-        result = object_def.parse_string(string)[0]
+        parser = ConfigParser(self.options)
+        result = parser.object_def.parse_string(string)[0]
 
         self.assertListEqual(result.args, [])
         self.assertSequenceEqual(str(result.label), 'base_ctrl_1')
         self.assertSequenceEqual(str(result.class_), 'com_bldg_controlzone')
 
-        self.assertEqual(len(result.body), 2)
-        self.assertSequenceEqual(result.body[0].name, 'ChildRotation')
-        self.assertSequenceEqual(result.body[1].name, 'ChildPosition')
-        pass
+        self.assertEqual(len(result.body), 0)

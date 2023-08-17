@@ -50,7 +50,7 @@ class World:
 
         region_count = sum([1 for x in self.instances if x.__class__.__name__ == 'Region'])
         object_count = sum([1 for x in self.instances if isinstance(x, Object)])
-        info_binary = b'INFO' + struct.pack('<II', region_count, object_count)
+        info_binary = b'INFO' + struct.pack('<III', 2*4, region_count, object_count)
 
         content_binary = name_binary + info_binary + instance_binaries
         size = len(content_binary)
