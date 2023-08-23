@@ -2,7 +2,7 @@ import struct
 from core.util.hashing import fnv1a_hash
 
 
-class Config:
+class ConfigDoc:
     def __init__(self, name=None):
         self._id = None
         self.name = name
@@ -17,21 +17,21 @@ class Config:
     @id.setter
     def id(self, value):
         if not isinstance(value, str):
-            raise TypeError('Config id must be type str.')
+            raise TypeError('ConfigDoc id must be type str.')
         if len(value) > 4:
-            raise ValueError('Config id must be no longer than 4 bytes.')
+            raise ValueError('ConfigDoc id must be no longer than 4 bytes.')
         while len(value) < 4:
             value += '_'
         self._id = value
 
     @staticmethod
     def build(tok):
-        config = Config()
+        config = ConfigDoc()
         config.instances = tok.as_list()
         return config
 
     def __repr__(self):
-        return 'Config[{}]'.format(len(self.instances))
+        return 'ConfigDoc[{}]'.format(len(self.instances))
 
     def to_binary(self):
         binary = bytearray()

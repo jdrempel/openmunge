@@ -2,7 +2,7 @@ import pathlib
 import struct
 
 from mungers.MungerBase import MungerBase
-from mungers.ast.Config import Config
+from mungers.ast.ConfigDoc import ConfigDoc
 from mungers.parsers.ConfigParser import ConfigParser
 from mungers.parsers.ParserOptions import ParserOptions
 
@@ -46,7 +46,7 @@ class ConfigMunge(MungerBase):
             self.logger.info('No input files were found. Stopping...')
             return
 
-        parser_options = ParserOptions(document_cls=Config)
+        parser_options = ParserOptions(document_cls=ConfigDoc)
         config_parser = ConfigParser(parser_options)
         self.logger.info('Parsing {} input files'.format(len(input_files)))
         file_parse_data_map = {input_file: config_parser.parse_file(input_file) for input_file in input_files}

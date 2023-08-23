@@ -21,10 +21,3 @@ def quat_to_rotation_matrix(quat):
 def mangle_quat(quat):
     q0, q1, q2, q3 = quat
     return [-q2, -q3, q0, -q1]
-
-
-if __name__ == '__main__':
-    q = [0.888, 0.291, -0.263, 0.240]
-    mat = quat_to_rotation_matrix(mangle_quat(q))
-    for row in mat:
-        print(row)

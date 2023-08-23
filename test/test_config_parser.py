@@ -4,7 +4,7 @@ import unittest
 from parameterized import parameterized
 
 from mungers.ast.Args import IntArg, FloatArg, StrArg
-from mungers.ast.Config import Config
+from mungers.ast.ConfigDoc import ConfigDoc
 from mungers.ast.ConfigInstance import ConfigInstance
 from mungers.parsers.ConfigParser import ConfigParser
 from mungers.parsers.ParserOptions import ParserOptions
@@ -16,7 +16,7 @@ class ConfigParserTest(unittest.TestCase):
         self.data_dir = self.get_data_dir('data')
         setup_global_config()
         setup_global_args(argparse.Namespace(platform='pc'))
-        self.options = ParserOptions(document_cls=Config,
+        self.options = ParserOptions(document_cls=ConfigDoc,
                                      all_numbers_are_floats=True,
                                      all_values_are_strings=False)
 
@@ -36,7 +36,7 @@ class ConfigParserTest(unittest.TestCase):
         data_file = self.data_dir / filename
         parser = ConfigParser(self.options)
         parse_result = parser.parse_file(data_file)
-        self.assertIsInstance(parse_result, Config)
+        self.assertIsInstance(parse_result, ConfigDoc)
 
     @parameterized.expand([
         ('Path',),
