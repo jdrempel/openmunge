@@ -69,6 +69,9 @@ class FloatArg(Arg):
     def __float__(self):
         return float(self.value)
 
+    def __int__(self):
+        return int(self.value)
+
     @staticmethod
     def build(tok):
         inst = FloatArg(tok[0])

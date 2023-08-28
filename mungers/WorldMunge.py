@@ -2,11 +2,14 @@ import pathlib
 import struct
 
 from mungers.MungerBase import MungerBase
+from mungers.ast.Barrier import Barrier
 from mungers.ast.BarrierDoc import BarrierDoc
+from mungers.ast.Hint import Hint
 from mungers.ast.HintDoc import HintDoc
 from mungers.ast.Region import Region
 from mungers.ast.RegionDoc import RegionDoc
 from mungers.ast.WorldDoc import WorldDoc
+from mungers.chunks.Chunk import Chunk
 
 from mungers.parsers.ConfigParser import ConfigParser
 from mungers.parsers.ParserOptions import ParserOptions
@@ -79,50 +82,109 @@ class WorldMunge(MungerBase):
         world_file_include_file_map = {input_file: tuple(self.get_included_files(input_file))
                                        for input_file in input_files}
 
-        world_file_region_size_binary_map = dict()
-        world_file_hint_size_binary_map = dict()
-        world_file_barrier_size_binary_map = dict()
         for world_file, include_files in world_file_include_file_map.items():
             region_file, hint_file, barrier_file = include_files
             if region_file is not None:
                 self.logger.debug('Parsing region file {}'.format(region_file))
                 region_parse_data = region_parser.parse_file(region_file)
-                world_file_region_size_binary_map[world_file] = [
-                    sum(1 for x in region_parse_data.instances if isinstance(x, Region)),
-                    region_parse_data.to_binary()
-                ]
+                world_file_parse_data_map[world_file].regions = [x for x in region_parse_data.instances if
+                                                                 isinstance(x, Region)]
             if hint_file is not None:
                 self.logger.debug('Parsing hint file {}'.format(hint_file))
                 hint_parse_data = hint_parser.parse_file(hint_file)
-                world_file_hint_size_binary_map[world_file] = hint_parse_data.to_binary()
+                world_file_parse_data_map[world_file].hints = [x for x in hint_parse_data.instances if
+                                                               isinstance(x, Hint)]
             if barrier_file is not None:
                 self.logger.debug('Parsing barrier file {}'.format(barrier_file))
                 barrier_parse_data = barrier_parser.parse_file(barrier_file)
-                world_file_barrier_size_binary_map[world_file] = barrier_parse_data.to_binary()
+                world_file_parse_data_map[world_file].barriers = [x for x in barrier_parse_data.instances if
+                                                                  isinstance(x, Barrier)]
 
-        for file_path, parse_data in world_file_parse_data_map.items():
-            parse_data.instances = [inst for inst in parse_data.instances if inst.name in CONFIG_SECTION_WHITELIST]
-            #total_config_size = 0
-            pack_str = '<4sI'
-            raw_binaries = bytearray()
+        for file_path, world in world_file_parse_data_map.items():
+            world.instances = [inst for inst in world.instances if inst.name in CONFIG_SECTION_WHITELIST]
+            with Chunk('ucfb').open() as root:
+                with world.open(root):
+                    with Chunk('NAME').open(world) as name:
+                        name.write_str(file_path.stem.lower())
+                    if world.terrain_name is not None:
+                        with Chunk('TNAM').open(world) as tnam:
+                            tnam.write_str(world.terrain_name)
+                    if world.sky_name is not None:
+                        with Chunk('SNAM').open(world) as snam:
+                            snam.write_str(world.sky_name)
+                    with Chunk('INFO').open(world) as info:
+                        info.write_int(len(world.regions))
+                        info.write_int(len(world.instances))
+                    for region in world.regions:
+                        with region.open(world):
+                            with Chunk('INFO').open(region) as info:
+                                with Chunk('TYPE').open(info) as type_:
+                                    type_.write_str(region.region_type)
+                                with Chunk('NAME').open(info) as name:
+                                    name.write_str(region.class_info)
+                                with Chunk('XFRM').open(info) as xfrm:
+                                    for f in region.get_transform():
+                                        xfrm.write_float(f)
+                                with Chunk('SIZE').open(info) as size:
+                                    for f in region.size:
+                                        size.write_float(f)
+                            for prop in region.body:
+                                if not str(prop.args[0]):
+                                    continue
+                                with prop.open(region):
+                                    prop.write_bytes(prop.name)
+                                    prop.write_str(prop.args[0])
+                    for instance in world.instances:
+                        with instance.open(world):
+                            with Chunk('INFO').open(instance) as info:
+                                with Chunk('TYPE').open(info) as type_:
+                                    type_.write_str(instance.class_)
+                                with Chunk('NAME').open(info) as name:
+                                    name.write_str(instance.label)
+                                with Chunk('XFRM').open(info) as xfrm:
+                                    for f in instance.get_transform():
+                                        xfrm.write_float(f)
+                            for prop in instance.body:
+                                if not str(prop.args[0]):
+                                    continue
+                                with prop.open(instance):
+                                    prop.write_bytes(prop.name)
+                                    prop.write_str(prop.args[0])
+                    for hint in world.hints:
+                        with hint.open(world):
+                            with Chunk('INFO').open(hint) as info:
+                                with Chunk('TYPE').open(info) as type_:
+                                    type_.write_str(hint.hint_type)
+                                with Chunk('NAME').open(info) as name:
+                                    name.write_str(hint.hint_name)
+                                with Chunk('XFRM').open(info) as xfrm:
+                                    for f in instance.get_transform():
+                                        xfrm.write_float(f)
+                            for prop in hint.body:
+                                if not str(prop.args[0]):
+                                    continue
+                                with prop.open(hint):
+                                    prop.write_bytes(prop.name)
+                                    prop.write_str(prop.args[0])
+                    for barrier in world.barriers:
+                        with barrier.open(world):
+                            with Chunk('INFO').open(barrier) as info:
+                                with Chunk('NAME').open(info) as name:
+                                    name.write_str(barrier.barrier_name)
+                                with Chunk('XFRM').open(info) as xfrm:
+                                    for f in barrier.get_transform():
+                                        xfrm.write_float(f)
+                                with Chunk('SIZE').open(info) as size:
+                                    for f in barrier.get_size():
+                                        size.write_float(f)
+                                with Chunk('FLAG').open(info) as flag:
+                                    flag.write_int(barrier.flags)
 
             self.logger.info('Munging {file}...'.format(file=file_path))
             config_name = file_path.stem
-            parse_data.name = config_name
-            region_data = world_file_region_size_binary_map[file_path]
-            hint_binary = world_file_hint_size_binary_map[file_path]
-            barrier_binary = world_file_barrier_size_binary_map[file_path]
-            config_size, config_binary = parse_data.to_binary(region_data=region_data,
-                                                              hint_binary=hint_binary,
-                                                              barrier_binary=barrier_binary)
-            #total_config_size += config_size  # TODO figure out why this is wrong
-            raw_binaries.extend(config_binary)
-
-            pack_str += '{}s'.format(len(raw_binaries))
-            binary = struct.pack(pack_str, b'ucfb', len(raw_binaries), raw_binaries)
             root_config_file_name = pathlib.Path(config_name).with_suffix(extension)
             root_config_file_path = self.args.output_dir / root_config_file_name
 
             with open(root_config_file_path, 'wb') as f:
-                num_written = f.write(binary)
+                num_written = f.write(root.binary)
                 self.logger.info('Wrote {nbytes} bytes to {path}'.format(nbytes=num_written, path=root_config_file_path))

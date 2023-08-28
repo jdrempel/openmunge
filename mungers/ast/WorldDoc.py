@@ -1,21 +1,23 @@
 import pathlib
 import struct
+from contextlib import contextmanager
 
-from core.util.hashing import fnv1a_hash
 from mungers.ast.Object import Object
+from mungers.chunks.Chunk import Chunk
 from mungers.serializers.BinarySerializer import BinarySerializer
 
 
-class WorldDoc:
+class WorldDoc(Chunk):
     SPECIAL_NAMES = {'TerrainName', 'SkyName'}
 
-    def __init__(self, name=None):
-        self._id = None
-        self.name = name
-        self.version = 3
-        self.instances = []
+    def __init__(self):
+        super().__init__('wrld')
         self.terrain_name = None
         self.sky_name = None
+        self.regions = []
+        self.instances = []
+        self.hints = []
+        self.barriers = []
 
     def __repr__(self):
         return 'WorldDoc[{}]'.format(len(self.instances))
@@ -28,6 +30,12 @@ class WorldDoc:
     def build(tok):
         world = WorldDoc()
         world.instances = tok.as_list()
+        for instance in world.instances:
+            if str(instance.name) == 'TerrainName':
+                world.terrain_name = pathlib.Path(str(instance.args[0])).stem
+            elif str(instance.name) == 'SkyName':
+                world.sky_name = pathlib.Path(str(instance.args[0])).stem
+        world.instances = [x for x in world.instances if isinstance(x, Object)]
         return world
 
     def to_binary(self, region_data=None, hint_binary=None, barrier_binary=None):

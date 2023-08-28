@@ -1,15 +1,19 @@
 import struct
 
+from core.util.hashing import fnv1a_hash_str as magic
 from core.util.math_util import mangle_quat, quat_to_rotation_matrix
-from mungers.ast.Property import Property
+from mungers.chunks.Chunk import Chunk
 from mungers.serializers.BinarySerializer import BinarySerializer
 
 
-class Hint(Property):
-    CHILD_BLACKLIST = {'Position', 'Rotation'}
+class Hint(Chunk):
+    CHILD_BLACKLIST = {magic(x) for x in ('Position', 'Rotation')}
 
     def __init__(self):
-        super().__init__()
+        super().__init__('Hint')
+        self.name = None
+        self.args = []
+        self.body = None
         self.hint_name = None
         self.hint_type = None
         self.rotation = [0.0] * 4
@@ -27,14 +31,24 @@ class Hint(Property):
         inst.hint_type = tok[0].args[1]
         body = tok[0].body.as_list() or []
         for x in body:
-            if str(x.name) == 'Rotation':
+            if x.name == magic('Rotation'):
                 inst.rotation = [float(arg) for arg in x.args]
-            elif str(x.name) == 'Position':
+            elif x.name == magic('Position'):
                 inst.position = [float(arg) for arg in x.args]
-            elif str(x.name) == 'Size':
+            elif x.name == magic('Size'):
                 inst.size = [float(arg) for arg in x.args]
-        inst.body = [item for item in body if str(item.name) not in Hint.CHILD_BLACKLIST]
+        inst.body = [item for item in body if item.name not in Hint.CHILD_BLACKLIST]
         return inst
+
+    def get_transform(self):
+        xfrm_rot_mat = quat_to_rotation_matrix(mangle_quat(self.rotation))  # Thanks Pandemic
+        xfrm_rot = [i for row in xfrm_rot_mat for i in row]
+
+        xfrm_pos = [float(v) for v in self.position]
+        xfrm_pos[2] = -xfrm_pos[2]  # Thanks Pandemic
+
+        xfrm = xfrm_rot + xfrm_pos
+        return xfrm
 
     def to_binary(self):
         ser = BinarySerializer

@@ -11,3 +11,8 @@ def fnv1a_hash(buffer: bytes) -> bytes:
         result = (result ^ (byte | 0x20)) & U32_MASK
         result = (result * FNV_PRIME) & U32_MASK
     return struct.pack('<I', result)
+
+
+def fnv1a_hash_str(string: str) -> bytes:
+    str_bytes = bytes(string, 'ascii')
+    return fnv1a_hash(str_bytes)
