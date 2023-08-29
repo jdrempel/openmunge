@@ -83,17 +83,6 @@ class StrArg(Arg):
         super().__init__(value)
         self.value = str(value)
 
-    def to_binary(self) -> bytes:
-        annotated_padded_value = struct.pack(
-            '<II{}s'.format(len(self.value)+1),
-            4, len(self.value)+1, bytes(self.value, encoding='ascii'))
-        return annotated_padded_value
-
-    def to_binary_no_annotation(self, strict=False) -> bytes:
-        if not strict:
-            return struct.pack('<I{}s'.format(len(self.value)+1), len(self.value)+1, bytes(self.value, encoding='ascii'))
-        return struct.pack('<{}s'.format(len(self.value)+1), bytes(self.value, encoding='ascii'))
-
     def __repr__(self):
         return '{cls}({val})'.format(cls=self.__class__.__name__, val=self.value)
 
@@ -110,3 +99,9 @@ class StrArg(Arg):
     def build(tok):
         inst = StrArg(tok[0])
         return inst
+
+    def to_binary(self) -> bytes:
+        annotated_padded_value = struct.pack(
+            '<II{}sx'.format(len(self.value)),
+            4, len(self.value)+1, bytes(self.value, encoding='ascii'))
+        return annotated_padded_value

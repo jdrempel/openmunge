@@ -1,51 +1,31 @@
 import struct
-from core.util.hashing import fnv1a_hash
+from core.util.hashing import fnv1a_hash, magic
+from mungers.chunks.Chunk import Chunk
 
 
-class ConfigDoc:
+class ConfigDoc(Chunk):
     def __init__(self, name=None):
-        self._id = None
-        self.name = name
+        super().__init__('cnfg')
+        self._config_name = None
         self.version = 10
         self.properties = []
         self.instances = []
 
-    @property
-    def id(self):
-        return self._id
+    def __repr__(self):
+        return 'ConfigDoc[{}]'.format(len(self.instances))
 
-    @id.setter
-    def id(self, value):
+    @property
+    def config_name(self):
+        return self._config_name
+
+    @config_name.setter
+    def config_name(self, value):
         if not isinstance(value, str):
-            raise TypeError('ConfigDoc id must be type str.')
-        if len(value) > 4:
-            raise ValueError('ConfigDoc id must be no longer than 4 bytes.')
-        while len(value) < 4:
-            value += '_'
-        self._id = value
+            raise TypeError('ConfigDoc name must be type str.')
+        self._config_name = magic(value)
 
     @staticmethod
     def build(tok):
         config = ConfigDoc()
         config.instances = tok.as_list()
         return config
-
-    def __repr__(self):
-        return 'ConfigDoc[{}]'.format(len(self.instances))
-
-    def to_binary(self):
-        binary = bytearray()
-        binary.extend(bytes(self.id, encoding='ascii'))
-        content_size = 0
-        instance_binaries = bytearray()
-        for instance in self.instances:
-            inst_size, inst_binary = instance.to_binary()
-            content_size += inst_size
-            instance_binaries.extend(inst_binary)
-        name = fnv1a_hash(bytes(self.name, encoding='ascii'))
-        name_binary = b'NAME' + struct.pack('<I4s', 4, name)
-        content_binary = name_binary + instance_binaries
-        size = len(content_binary)
-        binary.extend(struct.pack('<I', size))
-        binary.extend(content_binary)
-        return content_size, binary

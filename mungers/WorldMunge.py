@@ -101,6 +101,7 @@ class WorldMunge(MungerBase):
                                                                   isinstance(x, Barrier)]
 
         for file_path, world in world_file_parse_data_map.items():
+            self.logger.info('Munging {file}...'.format(file=file_path))
             world.instances = [inst for inst in world.instances if inst.name in CONFIG_SECTION_WHITELIST]
             with Chunk('ucfb').open() as root:
                 with world.open(root):
@@ -180,7 +181,6 @@ class WorldMunge(MungerBase):
                                 with Chunk('FLAG').open(info) as flag:
                                     flag.write_int(barrier.flags)
 
-            self.logger.info('Munging {file}...'.format(file=file_path))
             config_name = file_path.stem
             root_config_file_name = pathlib.Path(config_name).with_suffix(extension)
             root_config_file_path = self.args.output_dir / root_config_file_name

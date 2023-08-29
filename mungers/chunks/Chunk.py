@@ -4,10 +4,23 @@ from contextlib import contextmanager
 
 class Chunk:
     def __init__(self, chunk_id: str, name: str = None):
+        self._chunk_id = None
         self.chunk_id = chunk_id
         self.name = name
         self.size = 0
         self.binary = bytearray()
+
+    @property
+    def chunk_id(self):
+        return self._chunk_id
+
+    @chunk_id.setter
+    def chunk_id(self, value):
+        if not isinstance(value, str):
+            raise TypeError('Chunk id must be a str.')
+        self._chunk_id = value
+        while len(self._chunk_id) % 4:
+            self._chunk_id += '_'
 
     def update_size(self):
         self.size = len(self.binary[8:])

@@ -16,3 +16,6 @@ def fnv1a_hash(buffer: bytes) -> bytes:
 def fnv1a_hash_str(string: str) -> bytes:
     str_bytes = bytes(string, 'ascii')
     return fnv1a_hash(str_bytes)
+
+
+magic = fnv1a_hash_str

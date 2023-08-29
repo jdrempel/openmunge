@@ -1,11 +1,11 @@
-from core.util.hashing import fnv1a_hash_str
+from core.util.hashing import magic
 from mungers.chunks.Chunk import Chunk
 
 
 class InstProperty(Chunk):
     def __init__(self, name, args):
         super().__init__('PROP')
-        self.name = fnv1a_hash_str(name)
+        self.name = magic(name)
         self.args = args
         self.body = None
 

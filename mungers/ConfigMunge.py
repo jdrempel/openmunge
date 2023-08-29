@@ -3,6 +3,7 @@ import struct
 
 from mungers.MungerBase import MungerBase
 from mungers.ast.ConfigDoc import ConfigDoc
+from mungers.chunks.Chunk import Chunk
 from mungers.parsers.ConfigParser import ConfigParser
 from mungers.parsers.ParserOptions import ParserOptions
 
@@ -51,25 +52,21 @@ class ConfigMunge(MungerBase):
         self.logger.info('Parsing {} input files'.format(len(input_files)))
         file_parse_data_map = {input_file: config_parser.parse_file(input_file) for input_file in input_files}
 
-        total_config_size = 0
-        pack_str = '<4sI'
-        raw_binaries = bytearray()
+        with Chunk('ucfb').open() as root:
+            for file_path, config in file_parse_data_map.items():
+                self.logger.info('Munging {file}...'.format(file=file_path))
+                config_name = file_path.stem
+                config.chunk_id = self.args.chunk_id
+                config.config_name = config_name
+                with config.open(root):
+                    with Chunk('NAME').open(config) as name:
+                        name.write_bytes(config.config_name)
+                    for instance in config.instances:
+                        instance.to_binary(config)
 
-        for file_path, parse_data in file_parse_data_map.items():
-            self.logger.info('Munging {file}...'.format(file=file_path))
-            if self.args.chunk_id is not None:
-                parse_data.id = self.args.chunk_id  # TODO but what about the other case where it's not given??
-            config_name = file_path.stem
-            parse_data.name = config_name
-            config_size, config_binary = parse_data.to_binary()
-            total_config_size += config_size  # TODO figure out why this is wrong
-            raw_binaries.extend(config_binary)
-
-        pack_str += '{}s'.format(len(raw_binaries))
-        binary = struct.pack(pack_str, b'ucfb', len(raw_binaries), raw_binaries)
         root_config_file_name = pathlib.Path(output_name).with_suffix(extension)
         root_config_file_path = self.args.output_dir / root_config_file_name
 
         with open(root_config_file_path, 'wb') as f:
-            num_written = f.write(binary)
+            num_written = f.write(root.binary)
             self.logger.info('Wrote {nbytes} bytes to {path}'.format(nbytes=num_written, path=root_config_file_path))
