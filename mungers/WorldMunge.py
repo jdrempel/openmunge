@@ -1,13 +1,10 @@
 import pathlib
-import struct
 
 from mungers.MungerBase import MungerBase
 from mungers.ast.Barrier import Barrier
-from mungers.ast.BarrierDoc import BarrierDoc
+from mungers.ast.GenericDoc import GenericDoc
 from mungers.ast.Hint import Hint
-from mungers.ast.HintDoc import HintDoc
 from mungers.ast.Region import Region
-from mungers.ast.RegionDoc import RegionDoc
 from mungers.ast.WorldDoc import WorldDoc
 from mungers.chunks.Chunk import Chunk
 
@@ -29,7 +26,8 @@ class WorldMunge(MungerBase):
     def __init__(self):
         super().__init__('WorldMunge')
 
-    def get_included_files(self, world_file: pathlib.Path) -> list[pathlib.Path]:
+    @staticmethod
+    def get_included_files(world_file: pathlib.Path) -> list[pathlib.Path]:
         parent = world_file.parent
         world_name = world_file.stem
         region_file = None
@@ -61,16 +59,16 @@ class WorldMunge(MungerBase):
                                              all_values_are_strings=True)
         world_parser = ConfigParser(world_parser_options)
 
-        region_parser_options = ParserOptions(document_cls=RegionDoc,
+        region_parser_options = ParserOptions(document_cls=GenericDoc,
                                               all_numbers_are_floats=False)
         region_parser = ConfigParser(region_parser_options)
 
-        hint_parser_options = ParserOptions(document_cls=HintDoc,
+        hint_parser_options = ParserOptions(document_cls=GenericDoc,
                                             all_numbers_are_floats=False,
                                             all_values_are_strings=True)
         hint_parser = ConfigParser(hint_parser_options)
 
-        barrier_parser_options = ParserOptions(document_cls=BarrierDoc,
+        barrier_parser_options = ParserOptions(document_cls=GenericDoc,
                                                all_numbers_are_floats=False,
                                                all_values_are_strings=False)
         barrier_parser = ConfigParser(barrier_parser_options)
@@ -187,4 +185,5 @@ class WorldMunge(MungerBase):
 
             with open(root_config_file_path, 'wb') as f:
                 num_written = f.write(root.binary)
-                self.logger.info('Wrote {nbytes} bytes to {path}'.format(nbytes=num_written, path=root_config_file_path))
+                self.logger.info('Wrote {nbytes} bytes to {path}'
+                                 .format(nbytes=num_written, path=root_config_file_path))

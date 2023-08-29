@@ -1,5 +1,4 @@
 import pathlib
-import struct
 
 from mungers.MungerBase import MungerBase
 from mungers.ast.ConfigDoc import ConfigDoc

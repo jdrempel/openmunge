@@ -59,4 +59,4 @@ class ReqParserTest(unittest.TestCase):
         ('doc with two sections', 'ucft { REQN { "config_1"\n"item_1" } REQN { "config_2"\n"item_1" } }'),
     ])
     def test_req_doc_parsing(self, _name, string):
-        result = req_doc.parse_string(string)
+        _ = req_doc.parse_string(string)

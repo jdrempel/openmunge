@@ -1,14 +1,11 @@
-import struct
-from core.util.hashing import fnv1a_hash, magic
+from core.util.hashing import magic
 from mungers.chunks.Chunk import Chunk
 
 
 class ConfigDoc(Chunk):
-    def __init__(self, name=None):
+    def __init__(self):
         super().__init__('cnfg')
         self._config_name = None
-        self.version = 10
-        self.properties = []
         self.instances = []
 
     def __repr__(self):

@@ -1,10 +1,7 @@
 import pathlib
-import struct
-from contextlib import contextmanager
 
 from mungers.ast.Object import Object
 from mungers.chunks.Chunk import Chunk
-from mungers.serializers.BinarySerializer import BinarySerializer
 
 
 class WorldDoc(Chunk):

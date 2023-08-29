@@ -13,30 +13,30 @@ from mungers.parsers.ParserOptions import ParserOptions
 
 class ConfigParser:
     def __init__(self, options: ParserOptions):
-        LPAREN, RPAREN, LBRACE, RBRACE, SEMI, COMMA = map(pp.Suppress, map(pp.Literal, '(){};,'))
+        lparen, rparen, lbrace, rbrace, semi, comma = map(pp.Suppress, map(pp.Literal, '(){};,'))
         specials = ('Animation', 'Barrier', 'Hint', 'Object', 'Region')
         special_keys = pp.MatchFirst([pp.Keyword(s) for s in specials])
 
         self.args = pp.Forward()
         self.property_signature = pp.Forward()
 
-        property_def = pp.Group(self.property_signature + SEMI).set_parse_action(InstProperty.build)
+        property_def = pp.Group(self.property_signature + semi).set_parse_action(InstProperty.build)
 
-        object_signature = pp.Keyword('Object')('name') + LPAREN + pp.ZeroOrMore(self.args)('args') + RPAREN
+        object_signature = pp.Keyword('Object')('name') + lparen + pp.ZeroOrMore(self.args)('args') + rparen
         object_body = property_def[1, ...]('body')
-        self.object_def = pp.Group(object_signature + LBRACE + pp.Optional(object_body) + RBRACE)
+        self.object_def = pp.Group(object_signature + lbrace + pp.Optional(object_body) + rbrace)
 
-        region_signature = pp.Keyword('Region')('name') + LPAREN + pp.ZeroOrMore(self.args)('args') + RPAREN
+        region_signature = pp.Keyword('Region')('name') + lparen + pp.ZeroOrMore(self.args)('args') + rparen
         region_body = property_def[1, ...]('body')
-        self.region_def = pp.Group(region_signature + LBRACE + pp.Optional(region_body) + RBRACE)
+        self.region_def = pp.Group(region_signature + lbrace + pp.Optional(region_body) + rbrace)
 
-        hint_signature = pp.Keyword('Hint')('name') + LPAREN + pp.ZeroOrMore(self.args)('args') + RPAREN
+        hint_signature = pp.Keyword('Hint')('name') + lparen + pp.ZeroOrMore(self.args)('args') + rparen
         hint_body = property_def[1, ...]('body')
-        self.hint_def = pp.Group(hint_signature + LBRACE + pp.Optional(hint_body) + RBRACE)
+        self.hint_def = pp.Group(hint_signature + lbrace + pp.Optional(hint_body) + rbrace)
 
-        barrier_signature = pp.Keyword('Barrier')('name') + LPAREN + pp.ZeroOrMore(self.args)('args') + RPAREN
+        barrier_signature = pp.Keyword('Barrier')('name') + lparen + pp.ZeroOrMore(self.args)('args') + rparen
         barrier_body = property_def[1, ...]('body')
-        self.barrier_def = pp.Group(barrier_signature + LBRACE + pp.Optional(barrier_body) + RBRACE)
+        self.barrier_def = pp.Group(barrier_signature + lbrace + pp.Optional(barrier_body) + rbrace)
 
         self.name = ~special_keys + ppc.identifier('name')
         if options.all_values_are_strings:
@@ -49,11 +49,11 @@ class ConfigParser:
             self.value = (ppc.number.add_parse_action(NumberArgFactory.build) |
                           pp.quoted_string.set_parse_action(pp.remove_quotes, StrArg.build))
         self.args <<= pp.DelimitedList(self.value)
-        self.property_signature <<= self.name + LPAREN + pp.ZeroOrMore(self.args)('args') + RPAREN
-        instance_def = pp.Group(self.property_signature + SEMI)
+        self.property_signature <<= self.name + lparen + pp.ZeroOrMore(self.args)('args') + rparen
+        instance_def = pp.Group(self.property_signature + semi)
         self.property_ = pp.Forward()
         scope_body = self.property_[1, ...]('body')
-        scoped_def = pp.Group(self.property_signature + LBRACE + pp.Optional(scope_body) + RBRACE)
+        scoped_def = pp.Group(self.property_signature + lbrace + pp.Optional(scope_body) + rbrace)
         self.property_ <<= (instance_def.set_parse_action(ConfigInstance.build_property) |
                             scoped_def.set_parse_action(ConfigInstance.build_instance))
 
@@ -64,6 +64,7 @@ class ConfigParser:
                          self.property_)
         self.document_cls = options.document_cls
 
+    # noinspection PyUnresolvedReferences
     def parse_file(self, file):
         config_doc = self.document[...].set_parse_action(self.document_cls.build)
         with open(file, 'r') as f:

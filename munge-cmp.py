@@ -55,6 +55,7 @@ def main():
     out_data = [(int(a)-1, int('0'+b, 8), int('0'+c, 8)) for a, b, c in out_lines]
     index = 0
     while index < len(out_data):
+        # noinspection PyUnusedLocal
         pos, actual, golden = out_data[index]
         # TODO
         index += 1

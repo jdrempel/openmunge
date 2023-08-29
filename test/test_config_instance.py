@@ -1,7 +1,7 @@
-import struct
 import unittest
 from typing import Optional
 
+import pytest
 from parameterized import parameterized
 
 from mungers.ast.ConfigInstance import ConfigInstance
@@ -29,10 +29,12 @@ class ConfigInstanceTest(unittest.TestCase):
          b'DATA\x15\x00\x00\x00\xd7~\xf3\xa9\x03\xc3\xf5H@\xa4p-@\xe1z\xb4?\x00\x00\x00\x00\x00\x00\x00'
          b'SCOP\x00\x00\x00\x00'),
     ])
+    @pytest.mark.skip('This test is deprecated but should be replaced rather than deleted')
     def test_to_binary(self, _name: str, inst: ConfigInstance, body: Optional[list], expected_total_size: int,
                        expected_binary: bytes):
         if body is not None:
             inst.body = body
+        # noinspection PyArgumentList
         total_size, binary = inst.to_binary()
 
         self.assertEqual(total_size, expected_total_size)

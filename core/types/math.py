@@ -206,8 +206,6 @@ class Matrix33:
 
     @classmethod
     def from_vector4(cls, vec: Vector4):
-        #q0, q1, q2, q3 = vec.flatten()
-
         r00 = 2 * (vec.w * vec.w + vec.x * vec.x) - 1
         r01 = 2 * (vec.x * vec.y - vec.w * vec.z)
         r02 = 2 * (vec.x * vec.z + vec.w * vec.y)

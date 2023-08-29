@@ -68,7 +68,7 @@ class MungerBase(ScriptBase):
     def start(self):
         self.logger.info('Starting {}...'.format(self.name))
         self.logger.info('{name} Setup:\n\tConfig File: {config}\n\tArgs: {args}'
-                         .format(name=self.name, config=None,args=' '.join(sys.argv)))
+                         .format(name=self.name, config=None, args=' '.join(sys.argv)))
         try:
             self.run()
         except Exception as e:
