@@ -43,3 +43,6 @@ class Object(Chunk):
 
         xfrm = xfrm_rot + xfrm_pos
         return xfrm
+
+    def get_class_name(self):
+        return str(self.class_)

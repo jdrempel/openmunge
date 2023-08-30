@@ -5,12 +5,11 @@ import pytest
 from parameterized import parameterized
 
 from mungers.ast.ConfigInstance import ConfigInstance
-from mungers.serializers.BinarySerializer import BinarySerializer
 
 
 class ConfigInstanceTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.serializer = BinarySerializer
+        pass
 
     @parameterized.expand([
         ('empty', ConfigInstance('Foo', []), None, 20,

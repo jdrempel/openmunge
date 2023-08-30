@@ -10,6 +10,7 @@ from mungers.chunks.Chunk import Chunk
 
 from mungers.parsers.ConfigParser import ConfigParser
 from mungers.parsers.ParserOptions import ParserOptions
+from mungers.util.ReqDatabase import ReqDatabase
 from util.string_util import str_in_i
 
 CONFIG_SECTION_WHITELIST = {
@@ -157,7 +158,7 @@ class WorldMunge(MungerBase):
                                 with Chunk('NAME').open(info) as name:
                                     name.write_str(hint.hint_name)
                                 with Chunk('XFRM').open(info) as xfrm:
-                                    for f in instance.get_transform():
+                                    for f in hint.get_transform():
                                         xfrm.write_float(f)
                             for prop in hint.body:
                                 if not str(prop.args[0]):
@@ -187,3 +188,19 @@ class WorldMunge(MungerBase):
                 num_written = f.write(root.binary)
                 self.logger.info('Wrote {nbytes} bytes to {path}'
                                  .format(nbytes=num_written, path=root_config_file_path))
+
+            self.logger.info('Finished munging files. Writing output...')
+            db = ReqDatabase()
+
+            db.get_section('light').append(world.get_light_name())
+            db.get_section('terrain').append(world.get_terrain_name())
+            db.get_section('config').append(world.get_sky_name())
+            db.get_section('path').append(world.get_path_name())
+
+            for instance in world.instances:
+                with db.open_section('class') as class_db:
+                    class_db.append(instance.get_class_name())
+
+            req_file_path = pathlib.Path(str(root_config_file_path) + '.req')
+            db.write(req_file_path)
+            self.logger.debug('Wrote to {}'.format(req_file_path))

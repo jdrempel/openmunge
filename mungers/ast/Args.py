@@ -1,12 +1,9 @@
 import struct
 from abc import ABC, abstractmethod
 
-from mungers.serializers.BinarySerializer import BinarySerializer
-
 
 class Arg(ABC):
     def __init__(self, value):
-        self.serializer = BinarySerializer
         self.value = value
         super().__setattr__('raw_value', value)
 
