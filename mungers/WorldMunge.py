@@ -196,11 +196,9 @@ class WorldMunge(MungerBase):
             db.get_section('terrain').append(world.get_terrain_name())
             db.get_section('config').append(world.get_sky_name())
             db.get_section('path').append(world.get_path_name())
-
             for instance in world.instances:
-                with db.open_section('class') as class_db:
-                    class_db.append(instance.get_class_name())
+                db.get_section('class').append(instance.get_class_name())
 
             req_file_path = pathlib.Path(str(root_config_file_path) + '.req')
             db.write(req_file_path)
-            self.logger.debug('Wrote to {}'.format(req_file_path))
+            self.logger.debug('Wrote requirements db to {}'.format(req_file_path))

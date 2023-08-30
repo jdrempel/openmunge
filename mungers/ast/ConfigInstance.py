@@ -39,10 +39,10 @@ class ConfigInstance(Chunk):
             args = get_global_args()
             # Not as simple as just taking the body, need to expand platform conditional macros
             post_macro_body = []
+            magic_platform = magic(args.platform)
             for x in tok.body.as_list():
-                lower_name = str(x.name).lower()
-                if lower_name in ALL_PLATFORMS:
-                    if strcmp_i(lower_name, args.platform) and x.body is not None:
+                if x.name in [magic(p) for p in ALL_PLATFORMS]:
+                    if magic_platform == x.name and x.body is not None:
                         for child in x.body:
                             post_macro_body.append(child)
                 else:
