@@ -3,12 +3,14 @@ from contextlib import contextmanager
 from core.util.hashing import magic
 from mungers.ast.Args import Arg, FloatArg, StrArg
 from mungers.chunks.Chunk import Chunk
+from mungers.util.ReqDatabase import ReqDatabase
 from util.config import get_global_args
 from util.constants import ALL_PLATFORMS
-from util.string_util import strcmp_i
 
 
 class ConfigInstance(Chunk):
+    REQUIRE_DB_ENTRY = {magic(x) for x in ('Texture', 'Geometry')}
+
     def __init__(self, name, args):
         super().__init__('DATA')
         self.name = magic(name)
@@ -83,6 +85,13 @@ class ConfigInstance(Chunk):
             self.update_size()  # Update size here so that we don't include the padding
             while len(self.binary) % 4:
                 self.binary.append(0)
+        if self.name in self.REQUIRE_DB_ENTRY:
+            db = ReqDatabase()
+            entry = str(self.args[0])
+            if self.name == magic('Texture'):
+                db.get_section('texture').append(entry)
+            elif self.name == magic('Geometry'):
+                db.get_section('model').append(entry)
         if self.body is not None:
             with Chunk('SCOP').open(parent) as scop:
                 for inst in self.body:

@@ -5,6 +5,7 @@ from mungers.ast.ConfigDoc import ConfigDoc
 from mungers.chunks.Chunk import Chunk
 from mungers.parsers.ConfigParser import ConfigParser
 from mungers.parsers.ParserOptions import ParserOptions
+from mungers.util.ReqDatabase import ReqDatabase
 
 
 class ConfigMunge(MungerBase):
@@ -69,3 +70,10 @@ class ConfigMunge(MungerBase):
         with open(root_config_file_path, 'wb') as f:
             num_written = f.write(root.binary)
             self.logger.info('Wrote {nbytes} bytes to {path}'.format(nbytes=num_written, path=root_config_file_path))
+
+        self.logger.info('Finished munging files. Writing output...')
+        db = ReqDatabase()
+
+        req_file_path = pathlib.Path(str(root_config_file_path) + '.req')
+        db.write(req_file_path)
+        self.logger.debug('Wrote requirements db to {}'.format(req_file_path))
