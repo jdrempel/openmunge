@@ -20,6 +20,7 @@ class SingletonMeta(type):
 
 
 class ReqDatabase(metaclass=SingletonMeta):
+    """A singleton (per process) that tracks requirement database entries and writes them to a .req file."""
     def __init__(self):
         self.sections = ordereddict()
 
