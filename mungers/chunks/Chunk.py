@@ -33,6 +33,14 @@ class Chunk:
         str_bytes = bytes(str(string), 'ascii') + b'\x00'
         self.binary.extend(str_bytes)
 
+    def write_str_fixed(self, string, length):
+        str_bytes = bytes(str(string), 'ascii') + b'\x00'
+        if len(str_bytes) > length:
+            str_bytes = str_bytes[:length-1]
+        while len(str_bytes) < length:
+            str_bytes += b'\x00'
+        self.binary.extend(str_bytes)
+
     def write_byte(self, num):
         num_bytes = struct.pack('<B', num)
         self.binary.extend(num_bytes)
@@ -42,6 +50,10 @@ class Chunk:
 
     def write_int(self, num):
         num_bytes = struct.pack('<I', int(num))
+        self.binary.extend(num_bytes)
+
+    def write_short(self, num):
+        num_bytes = struct.pack('<H', int(num))
         self.binary.extend(num_bytes)
 
     def write_float(self, num):

@@ -4,7 +4,9 @@ from pyparsing import pyparsing_common as ppc
 from mungers.ast.Args import FloatArg, NumberArgFactory, StrArg
 from mungers.ast.Barrier import Barrier
 from mungers.ast.ConfigInstance import ConfigInstance
+from mungers.ast.Connection import Connection
 from mungers.ast.Hint import Hint
+from mungers.ast.Hub import Hub
 from mungers.ast.InstProperty import InstProperty
 from mungers.ast.Object import Object
 from mungers.ast.Region import Region
@@ -22,21 +24,17 @@ class ConfigParser:
 
         property_def = pp.Group(self.property_signature + semi).set_parse_action(InstProperty.build)
 
-        object_signature = pp.Keyword('Object')('name') + lparen + pp.ZeroOrMore(self.args)('args') + rparen
-        object_body = property_def[1, ...]('body')
-        self.object_def = pp.Group(object_signature + lbrace + pp.Optional(object_body) + rbrace)
+        def keyword_def(kw: str):
+            signature = pp.Keyword(kw)('name') + lparen + pp.ZeroOrMore(self.args)('args') + rparen
+            body = property_def[1, ...]('body')
+            return pp.Group(signature + lbrace + pp.Optional(body) + rbrace)
 
-        region_signature = pp.Keyword('Region')('name') + lparen + pp.ZeroOrMore(self.args)('args') + rparen
-        region_body = property_def[1, ...]('body')
-        self.region_def = pp.Group(region_signature + lbrace + pp.Optional(region_body) + rbrace)
-
-        hint_signature = pp.Keyword('Hint')('name') + lparen + pp.ZeroOrMore(self.args)('args') + rparen
-        hint_body = property_def[1, ...]('body')
-        self.hint_def = pp.Group(hint_signature + lbrace + pp.Optional(hint_body) + rbrace)
-
-        barrier_signature = pp.Keyword('Barrier')('name') + lparen + pp.ZeroOrMore(self.args)('args') + rparen
-        barrier_body = property_def[1, ...]('body')
-        self.barrier_def = pp.Group(barrier_signature + lbrace + pp.Optional(barrier_body) + rbrace)
+        self.object_def = keyword_def('Object')
+        self.region_def = keyword_def('Region')
+        self.hint_def = keyword_def('Hint')
+        self.barrier_def = keyword_def('Barrier')
+        self.hub_def = keyword_def('Hub')
+        self.connection_def = keyword_def('Connection')
 
         self.name = ~special_keys + ppc.identifier('name')
         if options.all_values_are_strings:
@@ -61,6 +59,8 @@ class ConfigParser:
                          self.region_def.set_parse_action(Region.build) |
                          self.hint_def.set_parse_action(Hint.build) |
                          self.barrier_def.set_parse_action(Barrier.build) |
+                         self.hub_def.set_parse_action(Hub.build) |
+                         self.connection_def.set_parse_action(Connection.build) |
                          self.property_)
         self.document_cls = options.document_cls
 

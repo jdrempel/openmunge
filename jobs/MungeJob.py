@@ -60,6 +60,12 @@ class OdfMungeJob(MungeJob):
         return 'odf'
 
 
+class PathPlanningMungeJob(MungeJob):
+    @staticmethod
+    def get_task():
+        return 'planning'
+
+
 class WorldMungeJob(MungeJob):
     @staticmethod
     def get_task():
