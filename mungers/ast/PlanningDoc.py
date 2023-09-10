@@ -44,20 +44,6 @@ class PlanningDoc(Chunk):
             elif isinstance(instance, Connection):
                 start = instance.start_hub
                 end = instance.end_hub
-                start_hub = plan.name_hub_map[start]
-                end_hub = plan.name_hub_map[end]
-
-                start_hub.outgoing_connections[instance] = end_hub
-                end_hub.incoming_connections[instance] = start_hub
-                if not instance.one_way:
-                    start_hub.incoming_connections[instance] = end_hub
-                    end_hub.outgoing_connections[instance] = start_hub
-
-                for x in range(NUM_TYPES):
-                    if not instance.flag & int(2**x):
-                        continue
-                    start_hub.type_connections[x] = instance
-                    end_hub.type_connections[x] = instance
 
                 plan.hub_connection_index_map[start].append(len(plan.connections))
                 plan.hub_connection_index_map[end].append(len(plan.connections))

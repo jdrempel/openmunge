@@ -16,11 +16,6 @@ class Hub:
         self.position = Vector3()
         self.radius = 0.0
 
-        self.outgoing_connections = dict()  # connection: destination hub
-        self.incoming_connections = dict()  # connection: origin hub
-        self.type_connections = dict()  # type_: list of connections
-        self.has_types = []  # list of bools
-
     def __str__(self):
         return 'Hub({})'.format(self.hub_name)
 
@@ -93,8 +88,7 @@ class Hub:
                     if inbound_arc_index >= outbound_arc_index:
                         # Only increment the count if the inbound index is less than the outbound
                         continue
-                    if maybe_inbound_arc.has_type_or_higher(i):
-                        global_hub_count_map[other_hub] += 1
+                    global_hub_count_map[other_hub] += 1
 
                 parent.write_byte(0xF8 | (global_hub_count_map[other_hub] & 0x7))
 
