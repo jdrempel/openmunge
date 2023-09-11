@@ -15,6 +15,7 @@ class Connection:
         self.one_way = False
         self.jump = False
         self.jet_jump = False
+        self.dynamic_group = None
 
     def __str__(self):
         return 'Connection({})'.format(self.connection_name)
@@ -38,6 +39,8 @@ class Connection:
                 inst.jet_jump = True
             elif x.name == magic('Jump'):
                 inst.jump = True
+            elif x.name == magic('Dynamic'):
+                inst.dynamic_group = int(x.args[0])
         return inst
 
     def to_binary(self, parent: Chunk, plan_doc):
