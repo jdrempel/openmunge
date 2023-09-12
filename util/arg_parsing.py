@@ -86,11 +86,11 @@ def parse_args():
                        default='INFO',
                        help='The minimum level of log message to be displayed. '
                             'Choices: %(choices)s. Default: %(default)s.')
-    group.add_argument('--swbf-path',
+    group.add_argument('--swbf2-path',
                        type=pathlib.Path,
                        default=None,
-                       help='Location of the SWBF(1|2) installation where fully munged files will be copied. This '
-                            'should point to the GameData directory.')
+                       help='Location of the SWBF2 installation where fully munged files will be copied. This should '
+                            'point to the GameData directory.')
 
     group = parser.add_argument_group('Job Handling Options')
     group.add_argument('--max-concurrent-jobs',
