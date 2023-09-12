@@ -16,10 +16,6 @@ class OdfMunge(MungerBase):
     def run(self):
         extension = '.class'
 
-        def multi_dict():
-            d = defaultdict(list)
-            return d
-
         self.logger.info('Parsing {} input files'.format(len(self.input_files)))
         odf_parser = OdfParser()
         file_parse_data_map = {input_file: odf_parser.parse_file(input_file) for input_file in self.input_files}
@@ -28,13 +24,21 @@ class OdfMunge(MungerBase):
             self.logger.info('Munging {file}...'.format(file=file_path))
             odf_name = file_path.stem
             with Chunk('ucfb').open() as root:
-                with Chunk('entc').open(root) as entity_class:
-                    with Chunk('BASE').open(entity_class) as base:
+                if odf_data.get('WeaponClass') is not None:
+                    class_chunk_name = 'wpnc'
+                elif odf_data.get('OrdnanceClass') is not None:
+                    class_chunk_name = 'ordc'
+                elif odf_data.get('ExplosionClass') is not None:
+                    class_chunk_name = 'expc'
+                else:
+                    class_chunk_name = 'entc'
+                with Chunk(class_chunk_name).open(root) as class_chunk:
+                    with Chunk('BASE').open(class_chunk) as base:
                         base.write_str(odf_data['__class_name'])
-                    with Chunk('TYPE').open(entity_class) as type_:
+                    with Chunk('TYPE').open(class_chunk) as type_:
                         type_.write_str(odf_name)
                     for key, value in odf_data['Properties']:
-                        with Chunk('PROP').open(entity_class) as prop:
+                        with Chunk('PROP').open(class_chunk) as prop:
                             prop.write_bytes(magic(key))
                             prop.write_str(value)
 

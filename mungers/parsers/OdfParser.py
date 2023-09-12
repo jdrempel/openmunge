@@ -34,7 +34,7 @@ class OdfParser:
             value = key_value.group('value').strip('" \t\r\n')
             if not value:
                 continue
-            if key == 'ClassLabel':
+            if key in ('ClassLabel', 'ClassParent'):
                 sections['__class_name'] = value
                 continue
             pair = (key, value)
