@@ -1,12 +1,9 @@
-import configparser
 import pathlib
-from collections import defaultdict
 
 from core.util.hashing import magic
 from mungers.MungerBase import MungerBase
 from mungers.chunks.Chunk import Chunk
 from mungers.parsers.OdfParser import OdfParser
-from util.constants import ODF_DELIMITERS, ODF_COMMENT_PREFIXES
 
 
 class OdfMunge(MungerBase):

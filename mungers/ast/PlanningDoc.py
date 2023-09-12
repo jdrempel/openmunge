@@ -32,9 +32,9 @@ class PlanningDoc(Chunk):
         instances = tok.as_list()
 
         def get_hub_index(name: str) -> int:
-            for i, hub in enumerate(plan.hubs):
+            for h, hub in enumerate(plan.hubs):
                 if hub.hub_name == name:
-                    return i
+                    return h
             return -1
 
         for instance in instances:

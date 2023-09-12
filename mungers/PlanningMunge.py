@@ -33,7 +33,7 @@ class PlanningMunge(MungerBase):
                             hub.to_binary(node, plan)
                     with Chunk('ARCS').open(plan) as arcs:
                         for connection in plan.connections:
-                            connection.to_binary(arcs, plan)
+                            connection.to_binary(arcs)
 
             root_config_file_name = pathlib.Path(output_name).with_suffix(extension)
             root_config_file_path = self.args.output_dir / root_config_file_name

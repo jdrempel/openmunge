@@ -43,7 +43,7 @@ class Connection:
                 inst.dynamic_group = int(x.args[0])
         return inst
 
-    def to_binary(self, parent: Chunk, plan_doc):
+    def to_binary(self, parent: Chunk):
         parent.write_str_fixed(self.connection_name, CONNECTION_NAME_SIZE)
         parent.write_byte(self.endpoints[0])
         parent.write_byte(self.endpoints[1])

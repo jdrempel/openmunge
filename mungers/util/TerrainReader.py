@@ -2,7 +2,6 @@ import pathlib
 from collections import defaultdict
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Union
 
 from core.types.math import Vector4
 from core.util.math_util import unpack_srgb_bgra
@@ -132,11 +131,11 @@ class TerrainReader(BinaryReader):
 
         def read_map(data_read_method, data_size):
             output = defaultdict(dict)
-            for y in range(header.terrain_length-1, -1, -1):
+            for y_ in range(header.terrain_length-1, -1, -1):
                 self.skip(active_offset*data_size)
-                if active_offset <= y < active_end:
-                    for x in range(terrain.length):
-                        output[x][y - active_offset] = data_read_method()
+                if active_offset <= y_ < active_end:
+                    for x_ in range(terrain.length):
+                        output[x_][y_ - active_offset] = data_read_method()
                 else:
                     self.skip(terrain.length*data_size)
                 self.skip(active_offset*data_size)
@@ -144,12 +143,12 @@ class TerrainReader(BinaryReader):
 
         def read_texture_weight_map():
             output = defaultdict(lambda: defaultdict(dict))
-            for y in range(header.terrain_length - 1, -1, -1):
+            for y_ in range(header.terrain_length - 1, -1, -1):
                 self.skip(active_offset*NUM_TEXTURES)
-                if active_offset <= y < active_end:
-                    for x in range(terrain.length):
-                        for i in range(NUM_TEXTURES):
-                            output[x][y - active_offset][i] = self.read_byte()
+                if active_offset <= y_ < active_end:
+                    for x_ in range(terrain.length):
+                        for t_ in range(NUM_TEXTURES):
+                            output[x_][y_ - active_offset][t_] = self.read_byte()
                 else:
                     self.skip(terrain.length*NUM_TEXTURES)
                 self.skip(active_offset*NUM_TEXTURES)

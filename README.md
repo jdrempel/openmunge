@@ -10,7 +10,7 @@ particular, its goals are:
   modtools
 - Achieve performance gains through multithreading and job batching
 - Be 100% compatible with other open-source, community-led modding tools
-- Work on Windows, MacOS, and Linux
+- Work on Windows, macOS, and Linux
 
 It is perhaps useful to state a handful of non-goals to clarify the scope of
 the project. OpenMunge is **not** intending to:

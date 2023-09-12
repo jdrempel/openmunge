@@ -1,5 +1,5 @@
 import pathlib
-from collections import OrderedDict as ordereddict
+from collections import OrderedDict
 from contextlib import contextmanager
 
 
@@ -22,7 +22,7 @@ class SingletonMeta(type):
 class ReqDatabase(metaclass=SingletonMeta):
     """A singleton (per process) that tracks requirement database entries and writes them to a .req file."""
     def __init__(self):
-        self.sections = ordereddict()
+        self.sections = OrderedDict()
 
     def get_section(self, name: str) -> ReqSection:
         if name not in self.sections:

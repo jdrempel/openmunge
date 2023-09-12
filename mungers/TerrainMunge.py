@@ -8,7 +8,7 @@ class TerrainMunge(MungerBase):
         super().__init__('TerrainMunge')
 
     def run(self):
-        extension = '.terrain'
+        # extension = '.terrain'
 
         for input_file in self.input_files:
             terrain_reader = TerrainReader(input_file)
