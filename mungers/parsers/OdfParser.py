@@ -35,7 +35,7 @@ class OdfParser:
             if not value:
                 continue
             if key in ('ClassLabel', 'ClassParent'):
-                sections['__class_name'] = value
+                sections['__class_name'] = (value, key == 'ClassParent')
                 continue
             pair = (key, value)
             sections[current_section].append(pair)

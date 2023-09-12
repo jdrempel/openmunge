@@ -48,3 +48,6 @@ class ReqDatabase(metaclass=SingletonMeta):
                 lines.extend(['\t' + line for line in section_lines if line.strip()])
             lines.append('}')
             f.write('\n'.join(lines))
+
+    def clear(self):
+        self.sections.clear()
