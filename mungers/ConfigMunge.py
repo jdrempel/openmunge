@@ -38,19 +38,10 @@ class ConfigMunge(MungerBase):
         else:
             extension = '.config'
 
-        if not self.args.output_dir.exists():
-            self.args.output_dir.mkdir(parents=True)
-
-        input_files = self.get_input_files()
-
-        if not input_files:
-            self.logger.info('No input files were found. Stopping...')
-            return
-
         parser_options = ParserOptions(document_cls=ConfigDoc)
         config_parser = ConfigParser(parser_options)
-        self.logger.info('Parsing {} input files'.format(len(input_files)))
-        file_parse_data_map = {input_file: config_parser.parse_file(input_file) for input_file in input_files}
+        self.logger.info('Parsing {} input files'.format(len(self.input_files)))
+        file_parse_data_map = {input_file: config_parser.parse_file(input_file) for input_file in self.input_files}
 
         with Chunk('ucfb').open() as root:
             for file_path, config in file_parse_data_map.items():

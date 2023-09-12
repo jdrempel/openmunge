@@ -12,6 +12,10 @@ class MungerBase(ScriptBase):
     """
     Mungers correspond to individual munge operations like odfmunge or $PLATFORM_modelmunge.
     """
+    def __init__(self, name):
+        super().__init__(name)
+        self.input_files = []
+
     def create_base_args(self):
         original_prog = pathlib.Path(sys.argv[0]).name
         short_name = self.name.replace('Munge', '').lower()
@@ -70,6 +74,12 @@ class MungerBase(ScriptBase):
         self.logger.info('{name} Setup:\n\tConfig File: {config}\n\tArgs: {args}'
                          .format(name=self.name, config=None, args=' '.join(sys.argv)))
         try:
+            self.input_files = self.get_input_files()
+            if not self.input_files:
+                self.logger.info('No input files were found. Stopping...')
+                return
+            if not self.args.output_dir.exists():
+                self.args.output_dir.mkdir(parents=True)
             self.run()
         except Exception as e:
             self.logger.exception('An error occurred while running {}.'.format(self.name), exc_info=e)

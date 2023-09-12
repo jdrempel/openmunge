@@ -46,15 +46,6 @@ class WorldMunge(MungerBase):
     def run(self):
         extension = '.world'
 
-        if not self.args.output_dir.exists():
-            self.args.output_dir.mkdir(parents=True)
-
-        input_files = self.get_input_files()
-
-        if not input_files:
-            self.logger.info('No input files were found. Stopping...')
-            return
-
         world_parser_options = ParserOptions(document_cls=WorldDoc,
                                              all_numbers_are_floats=False,
                                              all_values_are_strings=True)
@@ -74,12 +65,12 @@ class WorldMunge(MungerBase):
                                                all_values_are_strings=False)
         barrier_parser = ConfigParser(barrier_parser_options)
 
-        self.logger.info('Parsing {} input files'.format(len(input_files)))
-        world_file_parse_data_map = {input_file: world_parser.parse_file(input_file) for input_file in input_files}
+        self.logger.info('Parsing {} input files'.format(len(self.input_files)))
+        world_file_parse_data_map = {input_file: world_parser.parse_file(input_file) for input_file in self.input_files}
 
         self.logger.info('Searching for .bar, .rgn, and .hnt files')
         world_file_include_file_map = {input_file: tuple(self.get_included_files(input_file))
-                                       for input_file in input_files}
+                                       for input_file in self.input_files}
 
         for world_file, include_files in world_file_include_file_map.items():
             region_file, hint_file, barrier_file = include_files

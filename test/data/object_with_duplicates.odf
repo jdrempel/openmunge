@@ -1,0 +1,7 @@
+[GameObjectClass]
+ClassLabel      = "foobar"
+
+[Properties]
+Lighting        = "Dynamic"
+Lighting        = "Static"
+Lighting        = "None"

@@ -1,0 +1,18 @@
+[GameObjectClass]
+
+ClassLabel      = "foobar"
+GeometryName    = "some_thing_else.msh"
+
+[Properties]
+
+Lighting        = "Dynamic"
+
+IconTexture     = ""
+MapTexture      = ""
+
+GeometryName    = "some_thing_else"
+CarriedColorize = 1
+LifeSpan        = 50.0
+
+[InstanceProperties]
+

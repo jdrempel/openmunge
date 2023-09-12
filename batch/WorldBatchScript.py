@@ -1,5 +1,5 @@
 from batch.BatchScriptBase import BatchScriptBase
-from jobs.MungeJob import WorldMungeJob, ConfigMungeJob
+from jobs.MungeJob import WorldMungeJob, ConfigMungeJob, OdfMungeJob, PlanningMungeJob
 
 
 class WorldBatchScript(BatchScriptBase):
@@ -12,7 +12,7 @@ class WorldBatchScript(BatchScriptBase):
         batch = []
 
         batch.extend([
-            # OdfMungeJob(['$*.odf'], *base_args),
+            OdfMungeJob(['$*.odf'], *base_args),
             # ModelMungeJob(['$*.msh'], *base_args),
             # TextureMungeJob(['$*.tga', '$*.pic'], *base_args),
             # TerrainMungeJob(['$*.ter'], *base_args),
@@ -27,7 +27,7 @@ class WorldBatchScript(BatchScriptBase):
         batch.extend(path_jobs)
 
         batch.extend([
-            # PathPlanningMungeJob(['$*.pln'], *base_args),
+            PlanningMungeJob(['$*.pln'], *base_args),
             ConfigMungeJob(['$*.sky'], *base_args, chunk_id='sky'),
             ConfigMungeJob(['$*.fx'], *base_args, extension='.envfx', chunk_id='fx'),
             # ConfigMungeJob(['$*.prp'], *base_args, hash_strings=True, extension='.prop', chunk_id='prp'),
