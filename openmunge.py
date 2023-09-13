@@ -1,11 +1,13 @@
 from jobs.JobRunner import JobRunner
 from jobs.batching import get_work_batches
-from util.arg_parsing import parse_args
+from util.arg_parsing import get_base_parser
+from util.config import setup_global_config
 from util.logs import setup_logger
 
 
 def main():
-    args = parse_args()
+    arg_parser = get_base_parser()
+    config = setup_global_config(arg_parser)
     log = setup_logger('openmunge')
 
     # Set up work batches
@@ -20,7 +22,7 @@ def main():
     # Inputs: args
     # Effects: settings like max number of concurrent jobs are recorded into a job runner instance
     # Outputs: a fully configured job runner instance
-    job_runner = JobRunner(max_concurrent=args.max_concurrent_jobs)
+    job_runner = JobRunner(max_concurrent=config.max_concurrent_jobs)
     job_runner.add_batches(work_batches)
 
     # Run jobs

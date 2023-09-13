@@ -1,6 +1,5 @@
 from abc import abstractmethod
 
-from util.config import setup_global_args, setup_global_config
 from util.logs import setup_logger
 
 
@@ -12,6 +11,8 @@ class ScriptBase:
         self.arg_parser = None
         self.args = None
         self.job_args = None
+
+        self.config = None
 
     @abstractmethod
     def create_base_args(self):
@@ -30,8 +31,7 @@ class ScriptBase:
         else:
             self.args, self.job_args = self.arg_parser.parse_known_args(args=args)
 
-        setup_global_args(self.args)
-        setup_global_config()
+        # TODO self.config = setup_global_config(self.arg_parser)
 
         self.logger.setLevel(self.args.log_level)
         for handler in self.logger.handlers:

@@ -31,3 +31,5 @@ MUNGE_ALL = 'EVERYTHING'
 ALL_PLATFORMS = (Platform.PC, Platform.PS2, Platform.XBOX)
 ALL_LANGUAGES = (Language.ENGLISH, Language.FRENCH, Language.GERMAN, Language.ITALIAN, Language.JAPANESE,
                  Language.SPANISH, Language.UK_ENGLISH)
+
+ENV_VAR_PREFIX = 'MUNGE_'

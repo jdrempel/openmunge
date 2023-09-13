@@ -7,8 +7,7 @@ from util.config import get_global_config
 
 class BatchJob(JobBase, ABC):
     def get_executable_path(self):
-        cwd = get_global_config('global.cwd')
-        return pathlib.Path(cwd, 'run-batch').with_suffix('.py')
+        return pathlib.Path(self.config.cwd, 'run-batch').with_suffix('.py')
 
     def _get_name_prefix(self):
         batch_job = 'BatchJob'

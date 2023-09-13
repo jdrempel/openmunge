@@ -6,7 +6,7 @@ import time
 from abc import abstractmethod, ABC
 
 from jobs.JobRunner import JobStatus, COMPLETE_STATUSES
-from util.config import get_global_args, get_global_config, setup_global_config
+from util.config import get_global_config
 from util.constants import Platform
 
 
@@ -28,7 +28,7 @@ class JobBase(ABC):
         self.project_dir = project_dir
         self.platform = platform
 
-        setup_global_config()
+        self.config = get_global_config()
 
     def job_id(self):
         munge_type = self._get_name_prefix()
@@ -84,10 +84,9 @@ class JobBase(ABC):
         cmd.append(str(app_path))
         cmd.append(self.get_task())
 
-        args = get_global_args()
-        cmd.extend(['--log-level', args.log_level])
-        cmd.extend(['--project-dir', str(args.project_dir)])
-        cmd.extend(['--platform', args.platform])
+        cmd.extend(['--log-level', self.config.log_level])
+        cmd.extend(['--project-dir', str(self.config.project_dir)])
+        cmd.extend(['--platform', self.config.platform])
         cmd.extend(['--source-dir', str(self.source_dir)])
         cmd.extend(['--output-dir', str(self.get_output_dir())])
 
@@ -99,9 +98,8 @@ class JobBase(ABC):
 
         self.runner_log = job_runner_log
 
-        cwd = get_global_config('global.cwd')
         # Set up log file for this job
-        self.log_file_path = pathlib.Path(cwd) / '{j_id}.log'.format(j_id=self.job_id())
+        self.log_file_path = self.config.cwd / '{j_id}.log'.format(j_id=self.job_id())
         self.log_file = open(self.log_file_path, 'w')
 
     def execute(self):
