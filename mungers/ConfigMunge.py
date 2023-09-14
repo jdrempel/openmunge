@@ -6,7 +6,7 @@ from mungers.chunks.Chunk import Chunk
 from mungers.parsers.ConfigParser import ConfigParser
 from mungers.parsers.ParserOptions import ParserOptions
 from mungers.util.ReqDatabase import ReqDatabase
-from util.config import Config
+from core.config import Config
 
 
 class CfgMungeConfig(Config):

@@ -7,7 +7,7 @@ import time
 from abc import abstractmethod, ABC
 
 from jobs.JobRunner import JobStatus, COMPLETE_STATUSES
-from util.config import get_global_config
+from core.config import get_global_config
 from util.constants import Platform
 
 

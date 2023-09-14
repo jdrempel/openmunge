@@ -4,7 +4,7 @@ import sys
 from abc import abstractmethod
 
 from core.ScriptBase import ScriptBase
-from util.config import Config
+from core.config import Config
 from util.string_util import str_in_i
 
 

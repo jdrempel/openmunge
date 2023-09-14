@@ -154,6 +154,16 @@ class Config:
             argument_kwargs['help'] = argument_kwargs['help'].format(default=self._defaults.get(opt['name']))
             group.add_argument(*argument_args, **argument_kwargs)
 
+    def _validate_raw_option_value(self, name, value):
+        opt = self._options[name]
+        convert_to_type = opt['type']
+        typed_value = convert_to_type(value)
+        choices = opt['choices']
+        if choices is not None and typed_value not in choices:
+            raise ValueError('Option {}={} is not in valid set of choices {}'
+                             .format(name, typed_value, choices))
+        return typed_value
+
     def parse_cli_args(self, arg_parser, args=None, only_known=False):
         if only_known:
             namespace, remaining_args = arg_parser.parse_known_args(args)
@@ -174,7 +184,11 @@ class Config:
             raise IOError('Unable to read {}, no config data is available.'.format(str(cfg_file_path)))
         cfg_options = dict()
         if self._config_parser.has_section(self.name):
-            cfg_options = {k: v for k, v in self._config_parser.items(self.name)}
+            for k, v in self._config_parser.items(self.name):
+                opt = self._options[k]
+                typed_value = self._validate_raw_option_value(k, v)
+                dest = opt['dest']
+                cfg_options[dest] = typed_value
 
         # We now have to insert the config file options between env vars and cli args for precedence-preserving reasons
         maps = self._parsed_options.maps
@@ -189,14 +203,15 @@ class Config:
             env_var_name = ENV_VAR_PREFIX + opt['name'].upper()
             if env_var_name not in os.environ:
                 continue
-            env_vars[opt['dest']] = opt['type'](os.environ[env_var_name])
+            typed_value = self._validate_raw_option_value(opt['name'], os.environ[env_var_name])
+            env_vars[opt['dest']] = typed_value
         # We also inject the cwd
         env_vars['cwd'] = pathlib.Path(os.environ.get('PWD'))
         self._parsed_options = self._parsed_options.new_child(env_vars)
 
     def setup(self, cli_arg_parser, args=None, only_known=False):
         if self._initialized:
-            return
+            return []
 
         global_group = cli_arg_parser.add_argument_group('Global Options')
         self.add_options_to_arg_parser(global_group)
@@ -271,17 +286,7 @@ def get_global_config():
 def setup_global_config(cli_arg_parser, args=None):
     if _global_config.is_initialized():
         return _global_config
-
-    global_group = cli_arg_parser.add_argument_group('Global Options')
-    _global_config.add_options_to_arg_parser(global_group)
-
-    _global_config.parse_env_vars()
-    _global_config.parse_cli_args(cli_arg_parser, args=args)
-    # Parse cfg options after cli args because the cli args might tell us where to look for the config file
-    # The precedence order will be correctly rearranged automatically
-    _global_config.parse_cfg_file()
-
-    _global_config.finish_init()
+    _global_config.setup(cli_arg_parser, args=args)
     return _global_config
 
 

@@ -6,5 +6,5 @@ _outputs/
 *.pyc
 *.txt
 
-munge*.sh
+*.sh
 poetry.lock

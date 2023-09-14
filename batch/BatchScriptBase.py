@@ -4,7 +4,7 @@ from abc import abstractmethod
 
 from core.ScriptBase import ScriptBase
 from jobs.JobRunner import JobRunner
-from util.config import Config
+from core.config import Config
 
 
 class BatchScriptBaseConfig(Config):

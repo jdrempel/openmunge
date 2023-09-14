@@ -3,7 +3,7 @@ import os
 import sys
 from abc import abstractmethod
 
-from util.config import get_global_config
+from core.config import get_global_config
 from util.constants import ENV_VAR_PREFIX
 from util.logs import setup_logger
 
@@ -50,12 +50,13 @@ class ScriptBase:
     def init(self, args=None):
         if not self.arg_parser:
             self.arg_parser = argparse.ArgumentParser()
-            self.config = get_global_config()
-            self.job_args = self.config.setup(self.arg_parser, args=args, only_known=True)
-            self.create_base_args()
-            self.config |= self.create_base_config()
-            self.create_script_args()
-            self.config |= self.create_script_config()
+
+        self.config = get_global_config()
+        self.job_args = self.config.setup(self.arg_parser, args=args, only_known=True)
+        self.create_base_args()
+        self.config |= self.create_base_config()
+        self.create_script_args()
+        self.config |= self.create_script_config()
 
         self.logger.setLevel(self.config.log_level)
         for handler in self.logger.handlers:

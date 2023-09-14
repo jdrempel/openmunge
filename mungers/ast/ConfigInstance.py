@@ -4,7 +4,7 @@ from core.util.hashing import magic
 from mungers.ast.Args import Arg, FloatArg, StrArg
 from mungers.chunks.Chunk import Chunk
 from mungers.util.ReqDatabase import ReqDatabase
-from util.config import get_global_config
+from core.config import get_global_config
 from util.constants import ALL_PLATFORMS
 
 

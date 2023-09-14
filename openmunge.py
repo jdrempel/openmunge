@@ -1,7 +1,7 @@
 from jobs.JobRunner import JobRunner
 from jobs.batching import get_work_batches
 from util.arg_parsing import get_base_parser, handle_and_verify_base_config
-from util.config import setup_global_config
+from core.config import setup_global_config
 from util.logs import setup_logger
 
 

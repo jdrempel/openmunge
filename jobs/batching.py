@@ -1,5 +1,5 @@
 from jobs.BatchJob import WorldBatchJob, CommonBatchJob, SideBatchJob, LocalizeBatchJob
-from util.config import get_global_config
+from core.config import get_global_config
 from util.constants import MUNGE_ALL
 
 

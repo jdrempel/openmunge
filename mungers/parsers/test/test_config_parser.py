@@ -8,7 +8,7 @@ from mungers.ast.ConfigDoc import ConfigDoc
 from mungers.ast.ConfigInstance import ConfigInstance
 from mungers.parsers.ConfigParser import ConfigParser
 from mungers.parsers.ParserOptions import ParserOptions
-from util.config import setup_global_config
+from core.config import setup_global_config
 
 
 class ConfigParserTest(unittest.TestCase):
