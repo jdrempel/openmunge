@@ -2,7 +2,6 @@ from abc import ABC
 import pathlib
 
 from jobs.JobBase import JobBase
-from util.config import get_global_config
 
 
 class BatchJob(JobBase, ABC):

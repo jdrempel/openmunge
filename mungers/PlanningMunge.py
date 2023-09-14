@@ -9,10 +9,10 @@ from mungers.parsers.ParserOptions import ParserOptions
 
 class PlanningMunge(MungerBase):
     def __init__(self):
-        super().__init__('PathPlanningMunge')
+        super().__init__('PlanningMunge')
 
     def run(self):
-        output_name = self.args.source_dir.stem
+        output_name = self.config.source_dir.stem
         extension = '.congraph'
 
         parser_options = ParserOptions(document_cls=PlanningDoc)
@@ -36,7 +36,7 @@ class PlanningMunge(MungerBase):
                             connection.to_binary(arcs)
 
             root_config_file_name = pathlib.Path(output_name).with_suffix(extension)
-            root_config_file_path = self.args.output_dir / root_config_file_name
+            root_config_file_path = self.config.output_dir / root_config_file_name
 
             with open(root_config_file_path, 'wb') as f:
                 num_written = f.write(root.binary)

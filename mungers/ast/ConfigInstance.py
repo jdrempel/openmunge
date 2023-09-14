@@ -4,7 +4,7 @@ from core.util.hashing import magic
 from mungers.ast.Args import Arg, FloatArg, StrArg
 from mungers.chunks.Chunk import Chunk
 from mungers.util.ReqDatabase import ReqDatabase
-from util.config import get_global_args
+from util.config import get_global_config
 from util.constants import ALL_PLATFORMS
 
 
@@ -38,10 +38,10 @@ class ConfigInstance(Chunk):
             args = tok.args or []
         inst = ConfigInstance(tok.name, args)
         if tok.body:
-            args = get_global_args()
+            config = get_global_config()
             # Not as simple as just taking the body, need to expand platform conditional macros
             post_macro_body = []
-            magic_platform = magic(args.platform)
+            magic_platform = magic(config.platform)
             for x in tok.body.as_list():
                 if x.name in [magic(p) for p in ALL_PLATFORMS]:
                     if magic_platform == x.name and x.body is not None:

@@ -6,35 +6,43 @@ from mungers.chunks.Chunk import Chunk
 from mungers.parsers.ConfigParser import ConfigParser
 from mungers.parsers.ParserOptions import ParserOptions
 from mungers.util.ReqDatabase import ReqDatabase
+from util.config import Config
+
+
+class CfgMungeConfig(Config):
+    def setup_options(self):
+        self.add_option('output_file',
+                        show_in_cfg=False,
+                        help='If specified, all intermediate munged output will be merged into a single file with '
+                             'its name using the format: OUTPUT_FILE.EXT (see -ext/--extension).')
+        self.add_option('extension',
+                        alts=['-ext'],
+                        show_in_cfg=False,
+                        metavar='EXT',
+                        help='The file extension to be given to intermediate munged files.')
+        self.add_option('chunk_id',
+                        metavar='ID',
+                        required=True,
+                        show_in_cfg=False,
+                        help='If specified, override the IDs of all munged config chunks to have this value (must '
+                             'be 4 ASCII characters or less).')
 
 
 class ConfigMunge(MungerBase):
     def __init__(self):
         super().__init__('ConfigMunge')
 
-    def create_script_args(self):
-        group = self.arg_parser.add_argument_group('Config Munge Options')
-        group.add_argument('--output-file',
-                           type=str,
-                           default=None,
-                           help='If specified, all intermediate munged output will be merged into a single file with '
-                                'its name using the format: OUTPUT_FILE.EXT (see -ext/--extension).')
-        group.add_argument('-ext', '--extension',
-                           metavar='EXT',
-                           type=str,
-                           help='The file extension to be given to intermediate munged files.')
-        group.add_argument('--chunk-id',
-                           metavar='ID',
-                           type=str,
-                           default=None,
-                           help='If specified, override the IDs of all munged config chunks to have this value (must '
-                                'be 4 ASCII characters or less).')
+    def create_script_config(self):
+        script_config = CfgMungeConfig(self.name.lower())
+        script_config.setup(self.arg_parser, args=self.job_args, only_known=True)
+        return script_config
 
     def run(self):
-        output_name = self.args.source_dir.stem.lower() if self.args.output_file is None else self.args.output_file
-        if self.args.extension is not None:
-            extension = '.{}'.format(self.args.extension) if not self.args.extension.startswith('.') \
-                else self.args.extension
+        output_name = self.config.source_dir.stem.lower() if self.config.output_file is None \
+            else self.config.output_file
+        if self.config.extension is not None:
+            extension = '.{}'.format(self.config.extension) if not self.config.extension.startswith('.') \
+                else self.config.extension
         else:
             extension = '.config'
 
@@ -47,7 +55,7 @@ class ConfigMunge(MungerBase):
             for file_path, config in file_parse_data_map.items():
                 self.logger.info('Munging {file}...'.format(file=file_path))
                 config_name = file_path.stem
-                config.chunk_id = self.args.chunk_id
+                config.chunk_id = self.config.chunk_id
                 config.config_name = config_name
                 with config.open(root):
                     with Chunk('NAME').open(config) as name:
@@ -56,7 +64,7 @@ class ConfigMunge(MungerBase):
                         instance.to_binary(config)
 
         root_config_file_name = pathlib.Path(output_name).with_suffix(extension)
-        root_config_file_path = self.args.output_dir / root_config_file_name
+        root_config_file_path = self.config.output_dir / root_config_file_name
 
         with open(root_config_file_path, 'wb') as f:
             num_written = f.write(root.binary)

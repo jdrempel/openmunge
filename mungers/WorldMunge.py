@@ -69,6 +69,9 @@ class WorldMunge(MungerBase):
         world_file_parse_data_map = {input_file: world_parser.parse_file(input_file) for input_file in self.input_files}
 
         self.logger.info('Searching for .bar, .rgn, and .hnt files')
+        for input_file in self.input_files:
+            includes = self.get_included_files(input_file)
+            self.logger.info('Included files for {}: {}'.format(input_file, [str(x.name) for x in includes]))
         world_file_include_file_map = {input_file: tuple(self.get_included_files(input_file))
                                        for input_file in self.input_files}
 
@@ -173,7 +176,7 @@ class WorldMunge(MungerBase):
 
             config_name = file_path.stem
             root_config_file_name = pathlib.Path(config_name).with_suffix(extension)
-            root_config_file_path = self.args.output_dir / root_config_file_name
+            root_config_file_path = self.config.output_dir / root_config_file_name
 
             with open(root_config_file_path, 'wb') as f:
                 num_written = f.write(root.binary)

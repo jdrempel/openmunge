@@ -2,7 +2,6 @@ import pathlib
 from abc import ABC
 
 from jobs.JobBase import JobBase
-from util.config import get_global_config
 
 
 class MungeJob(JobBase, ABC):
@@ -11,8 +10,7 @@ class MungeJob(JobBase, ABC):
         self.input_files = input_files
 
     def get_executable_path(self):
-        cwd = get_global_config('global.cwd')
-        return pathlib.Path(cwd, 'run-munger').with_suffix('.py')
+        return pathlib.Path(self.config.cwd, 'run-munger').with_suffix('.py')
 
     def _get_name_prefix(self):
         job = 'Job'

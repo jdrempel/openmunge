@@ -4,8 +4,20 @@ import sys
 from abc import abstractmethod
 
 from core.ScriptBase import ScriptBase
-from util.constants import Platform, ALL_PLATFORMS
+from util.config import Config
 from util.string_util import str_in_i
+
+
+class MungerBaseConfig(Config):
+    def setup_options(self):
+        self.add_option('source_dir',
+                        alts=['-s'],
+                        type=pathlib.Path,
+                        help='The location in which all input files are contained.')
+        self.add_option('output_dir',
+                        alts=['-o'],
+                        type=pathlib.Path,
+                        help='The location where fully munged files will be placed.')
 
 
 class MungerBase(ScriptBase):
@@ -29,40 +41,19 @@ class MungerBase(ScriptBase):
                            help='A set of files in SOURCE_DIR to be used as munge inputs. Can use a wildcard * pattern '
                                 'but ensure args using the wildcard are wrapped in quotes. Prefix any arg with $ to '
                                 'perform recursive search for matching files in the subdirectories of SOURCE_DIR.')
-        group.add_argument('-s', '--source-dir',
-                           type=pathlib.Path,
-                           required=True,
-                           help='The location in which all input files are contained.')
-        group.add_argument('-o', '--output-dir',
-                           type=pathlib.Path,
-                           required=True,
-                           help='The location where fully munged files will be placed.')
-        group.add_argument('-p', '--platform',
-                           type=Platform,
-                           required=True,
-                           choices=ALL_PLATFORMS,
-                           help='The platform to target for munging files. Choices: %(choices)s. Default: %(default)s.')
         group.add_argument('-H', '--hash-strings',
                            action='store_true',
                            help='When specified, hash strings as magic numbers in the munged files.')
 
-        group = self.arg_parser.add_argument_group('Global Options')
-        group.add_argument('-P', '--project-dir',
-                           type=pathlib.Path,
-                           required=True,
-                           help='The location of the project data to be munged. This should point to the data_ABC '
-                                'directory (assuming ABC is the 3-letter code for the project).')
-        group.add_argument('-ll', '--log-level',
-                           type=str,
-                           choices=('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'),
-                           default='INFO',
-                           help='The minimum level of log message to be displayed. '
-                                'Choices: %(choices)s. Default: %(default)s.')
+    def create_base_config(self):
+        base_config = MungerBaseConfig(self.name.lower())
+        base_config.setup(self.arg_parser, args=self.job_args, only_known=True)
+        return base_config
 
     def get_input_files(self):
-        all_source_files = self.args.source_dir.glob('**/*')
+        all_source_files = self.config.source_dir.glob('**/*')
         result = []
-        for input_file_pattern in self.args.input_files:
+        for input_file_pattern in self.config.input_files:
             result.extend([file for file in all_source_files if str_in_i(file.suffix, input_file_pattern) and
                            file.is_file()])
         str_result = list(map(str, result))
@@ -70,16 +61,14 @@ class MungerBase(ScriptBase):
         return sorted(result)
 
     def start(self):
-        self.logger.info('Starting {}...'.format(self.name))
-        self.logger.info('{name} Setup:\n\tConfig File: {config}\n\tArgs: {args}'
-                         .format(name=self.name, config=None, args=' '.join(sys.argv)))
+        self.print_setup_info()
         try:
             self.input_files = self.get_input_files()
             if not self.input_files:
                 self.logger.info('No input files were found. Stopping...')
                 return
-            if not self.args.output_dir.exists():
-                self.args.output_dir.mkdir(parents=True)
+            if not self.config.output_dir.exists():
+                self.config.output_dir.mkdir(parents=True)
             self.run()
         except Exception as e:
             self.logger.exception('An error occurred while running {}.'.format(self.name), exc_info=e)

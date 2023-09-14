@@ -1,4 +1,5 @@
 import hashlib
+import os
 import pathlib
 import shutil
 import subprocess
@@ -84,9 +85,6 @@ class JobBase(ABC):
         cmd.append(str(app_path))
         cmd.append(self.get_task())
 
-        cmd.extend(['--log-level', self.config.log_level])
-        cmd.extend(['--project-dir', str(self.config.project_dir)])
-        cmd.extend(['--platform', self.config.platform])
         cmd.extend(['--source-dir', str(self.source_dir)])
         cmd.extend(['--output-dir', str(self.get_output_dir())])
 
@@ -106,8 +104,10 @@ class JobBase(ABC):
         self.time_start = time.time()
         # popen stuff...
         job_args = self.build_cli_args()
+        sub_env = os.environ | self.config.get_options_as_env_dict('project_dir', 'platform', 'config_file',
+                                                                   'log_level')
         self.runner_log.info('{j_id} args: {args}'.format(j_id=self.job_id(), args=' '.join(job_args)))
-        self.process = subprocess.Popen(job_args, stdout=self.log_file, stderr=self.log_file)
+        self.process = subprocess.Popen(job_args, stdout=self.log_file, stderr=self.log_file, env=sub_env)
 
     def update(self):
         ...

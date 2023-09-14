@@ -64,16 +64,16 @@ def get_base_parser():
     return parser
 
 
-def handle_and_verify_base_args(args: argparse.Namespace) -> None:
-    if args.munge_all:
-        args.worlds = [MUNGE_ALL]
-        args.sides = [MUNGE_ALL]
-        args.common = args.load = args.shell = args.movies = args.localize = args.sound = True
+def handle_and_verify_base_config(config) -> None:
+    if config.munge_all:
+        config.worlds = [MUNGE_ALL]
+        config.sides = [MUNGE_ALL]
+        config.common = config.load = config.shell = config.movies = config.localize = config.sound = True
 
-    if MUNGE_ALL in args.worlds and len(args.worlds) > 1:
-        args.worlds = [MUNGE_ALL]
-    if MUNGE_ALL in args.sides and len(args.sides) > 1:
-        args.sides = [MUNGE_ALL]
+    if MUNGE_ALL in config.worlds and len(config.worlds) > 1:
+        config.worlds = [MUNGE_ALL]
+    if MUNGE_ALL in config.sides and len(config.sides) > 1:
+        config.sides = [MUNGE_ALL]
 
-    args.worlds = [x.upper() for x in args.worlds if x != 'Common']  # Always do common anyway
-    args.sides = [x.upper() for x in args.sides]
+    config.worlds = [x.upper() for x in config.worlds if x != 'Common']  # Always do common anyway
+    config.sides = [x.upper() for x in config.sides]

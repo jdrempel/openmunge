@@ -1,6 +1,6 @@
 from jobs.JobRunner import JobRunner
 from jobs.batching import get_work_batches
-from util.arg_parsing import get_base_parser
+from util.arg_parsing import get_base_parser, handle_and_verify_base_config
 from util.config import setup_global_config
 from util.logs import setup_logger
 
@@ -8,6 +8,7 @@ from util.logs import setup_logger
 def main():
     arg_parser = get_base_parser()
     config = setup_global_config(arg_parser)
+    handle_and_verify_base_config(config)
     log = setup_logger('openmunge')
 
     # Set up work batches

@@ -1,21 +1,20 @@
-import argparse
 import pathlib
 import unittest
 from parameterized import parameterized
+from unittest import mock
 
 from mungers.ast.Args import IntArg, FloatArg, StrArg
 from mungers.ast.ConfigDoc import ConfigDoc
 from mungers.ast.ConfigInstance import ConfigInstance
 from mungers.parsers.ConfigParser import ConfigParser
 from mungers.parsers.ParserOptions import ParserOptions
-from util.config import setup_global_args, setup_global_config
+from util.config import setup_global_config
 
 
 class ConfigParserTest(unittest.TestCase):
     def setUp(self) -> None:
+        setup_global_config(mock.Mock())
         self.data_dir = self.get_data_dir('data')
-        setup_global_config()
-        setup_global_args(argparse.Namespace(platform='pc'))
         self.options = ParserOptions(document_cls=ConfigDoc,
                                      all_numbers_are_floats=True,
                                      all_values_are_strings=False)

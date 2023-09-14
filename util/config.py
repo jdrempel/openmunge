@@ -8,8 +8,10 @@ from util.arg_parsing import PositiveNumberArgumentType
 from util.constants import Platform, ALL_PLATFORMS, ENV_VAR_PREFIX
 
 
-class Globals:
-    def __init__(self):
+class Config:
+    def __init__(self, name):
+        self.name = name
+
         self._initialized = False
 
         self._options = dict()
@@ -22,15 +24,60 @@ class Globals:
 
     def __getattr__(self, item):
         if not self._initialized:
-            raise ValueError('Cannot __getattr__ on global config before it has been initialized.')
+            raise ValueError('Cannot __getattr__ on config {} before it has been initialized.'.format(self.name))
         try:
             return self._parsed_options[item]
         except KeyError:
-            raise AttributeError('No option "{}" found in global options.'.format(item))
+            raise AttributeError('No option "{}" found in config {}.'.format(item, self.name))
+
+    def __ior__(self, other):
+        if other is None:
+            return self
+        if not self._initialized or not other.is_initialized():
+            raise ValueError('Cannot combine Config instances before they are both initialized')
+        self.name = other.name
+        self._options |= other.options
+        self._defaults |= other.defaults
+        # Right side takes precedence
+        self._parsed_options = ChainMap(other.parsed_options, self._parsed_options)
+        # Reset the config parser, because I don't think we need to go to the trouble of merging
+        self._config_parser = cfgp.ConfigParser()
+        return self
+
+    def is_initialized(self):
+        return self._initialized
 
     def finish_init(self):
         self._initialized = True
 
+    @property
+    def options(self):
+        return self._options
+
+    @property
+    def parsed_options(self):
+        return self._parsed_options
+
+    @property
+    def defaults(self):
+        return self._defaults
+
+    def has_option(self, name: str) -> bool:
+        return name in self._options
+
+    def get_option_as_env_var(self, name: str):
+        if name not in self._options:
+            raise KeyError('Option {} not found in config {}.'.format(name, self.name))
+        name_upper = name.upper()
+        return ENV_VAR_PREFIX + name_upper
+
+    def get_options_as_env_dict(self, *names):
+        env_dict = dict()
+        for name in names:
+            env_dict[self.get_option_as_env_var(name)] = str(getattr(self, name))
+        return env_dict
+
+    # noinspection PyShadowingBuiltins
     def add_option(self, name: str, alts=None, required=False, type=None, choices=None, dest=None, metavar=None,
                    default=None, help=None, sections=None, show_in_cli=True, show_in_cfg=True):
         """
@@ -55,6 +102,9 @@ class Globals:
         if dest is None:
             dest = name
 
+        if type is None:
+            type = str
+
         new_option = dict(name=name,
                           alts=alts,
                           required=required,
@@ -78,48 +128,7 @@ class Globals:
         self._options[name] = new_option
 
     def setup_options(self):
-        self.add_option('platform',
-                        alts=['-p'],
-                        metavar='PLATFORM',
-                        type=Platform,
-                        choices=ALL_PLATFORMS,
-                        default=Platform.PC,
-                        sections=['global'],
-                        help='The platform to target for munging files. Choices: %(choices)s. Default: {default}.')
-
-        self.add_option('project_dir',
-                        alts=['-P'],
-                        type=pathlib.Path,
-                        sections=['global'],
-                        help='The location of the project data to be munged. This should point to the data_ABC '
-                             'directory (assuming ABC is the 3-letter code for the project).')
-
-        self.add_option('config_file',
-                        type=pathlib.Path,
-                        default=pathlib.Path.home() / '.mungerc',
-                        show_in_cfg=False,
-                        help='Location of a config file to use for global options. Command-line options take precedent '
-                             'over option values read from this file. Default: {default}')
-
-        self.add_option('log_level',
-                        alts=['-ll'],
-                        choices=('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'),
-                        default='INFO',
-                        sections=['global'],  # TODO add sections for batch and mungers?
-                        help='The minimum level of log message to be displayed. Choices: %(choices)s. '
-                             'Default: {default}.')
-
-        self.add_option('swbf2_path',
-                        type=pathlib.Path,
-                        sections=['global'],
-                        help='Location of the SWBF2 installation where fully munged files will be copied. This should '
-                             'point to the GameData directory.')
-
-        self.add_option('max_concurrent_jobs',
-                        metavar='NUM_JOBS',
-                        type=PositiveNumberArgumentType(),
-                        help='The number of munge jobs that can be run simultaneously. If left unspecified, will '
-                             'default to the number of CPUs available.')
+        pass
 
     def generate_defaults(self):
         for name, opt in self._options.items():
@@ -145,19 +154,27 @@ class Globals:
             argument_kwargs['help'] = argument_kwargs['help'].format(default=self._defaults.get(opt['name']))
             group.add_argument(*argument_args, **argument_kwargs)
 
-    def parse_cli_args(self, parser, args=None):
-        namespace = parser.parse_args(args)
+    def parse_cli_args(self, arg_parser, args=None, only_known=False):
+        if only_known:
+            namespace, remaining_args = arg_parser.parse_known_args(args)
+        else:
+            namespace = arg_parser.parse_args(args)
+            remaining_args = None
         cli_args = {k: v for k, v in vars(namespace).items() if v is not None}
         self._parsed_options = self._parsed_options.new_child(cli_args)
 
+        return remaining_args
+
     def parse_cfg_file(self):
-        cfg_file_path = self._parsed_options['config_file']
+        cfg_file_path = self._parsed_options.get('config_file')
         if not cfg_file_path:
-            raise AttributeError('No value for config_file found in globals (even in defaults!).')
+            return
         read_files = self._config_parser.read(cfg_file_path)
         if not read_files:
             raise IOError('Unable to read {}, no config data is available.'.format(str(cfg_file_path)))
-        cfg_options = {k: v for k, v in self._config_parser.items('global')}
+        cfg_options = dict()
+        if self._config_parser.has_section(self.name):
+            cfg_options = {k: v for k, v in self._config_parser.items(self.name)}
 
         # We now have to insert the config file options between env vars and cli args for precedence-preserving reasons
         maps = self._parsed_options.maps
@@ -177,20 +194,92 @@ class Globals:
         env_vars['cwd'] = pathlib.Path(os.environ.get('PWD'))
         self._parsed_options = self._parsed_options.new_child(env_vars)
 
+    def setup(self, cli_arg_parser, args=None, only_known=False):
+        if self._initialized:
+            return
 
-_global_config = Globals()
+        global_group = cli_arg_parser.add_argument_group('Global Options')
+        self.add_options_to_arg_parser(global_group)
+
+        self.parse_env_vars()
+        remaining_args = self.parse_cli_args(cli_arg_parser, args=args, only_known=only_known)
+        # Parse cfg options after cli args because the cli args might tell us where to look for the config file
+        # The precedence order will be correctly rearranged automatically
+        self.parse_cfg_file()
+
+        self._initialized = True
+
+        return remaining_args
+
+
+class GlobalConfig(Config):
+    def __init__(self):
+        super().__init__('global')
+
+    def setup_options(self):
+        self.add_option('platform',
+                        alts=['-p'],
+                        metavar='PLATFORM',
+                        type=Platform,
+                        choices=ALL_PLATFORMS,
+                        default=Platform.PC,
+                        sections=[self.name],
+                        help='The platform to target for munging files. Choices: %(choices)s. Default: {default}.')
+
+        self.add_option('project_dir',
+                        alts=['-P'],
+                        type=pathlib.Path,
+                        sections=[self.name],
+                        help='The location of the project data to be munged. This should point to the data_ABC '
+                             'directory (assuming ABC is the 3-letter code for the project).')
+
+        self.add_option('config_file',
+                        type=pathlib.Path,
+                        default=pathlib.Path.home() / '.mungerc',
+                        show_in_cfg=False,
+                        help='Location of a config file to use for global options. Command-line options take precedent '
+                             'over option values read from this file. Default: {default}')
+
+        self.add_option('log_level',
+                        alts=['-ll'],
+                        choices=('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'),
+                        default='INFO',
+                        sections=[self.name],  # TODO add sections for batch and mungers?
+                        help='The minimum level of log message to be displayed. Choices: %(choices)s. '
+                             'Default: {default}.')
+
+        self.add_option('swbf2_path',
+                        type=pathlib.Path,
+                        sections=[self.name],
+                        help='Location of the SWBF2 installation where fully munged files will be copied. This should '
+                             'point to the GameData directory.')
+
+        self.add_option('max_concurrent_jobs',
+                        metavar='NUM_JOBS',
+                        type=PositiveNumberArgumentType(),
+                        help='The number of munge jobs that can be run simultaneously. If left unspecified, will '
+                             'default to the number of CPUs available.')
+
+
+_global_config = GlobalConfig()
 
 
 def get_global_config():
     return _global_config
 
 
-def setup_global_config(cli_arg_group):
-    _global_config.add_options_to_arg_parser(cli_arg_group)
+def setup_global_config(cli_arg_parser, args=None):
+    if _global_config.is_initialized():
+        return _global_config
+
+    global_group = cli_arg_parser.add_argument_group('Global Options')
+    _global_config.add_options_to_arg_parser(global_group)
 
     _global_config.parse_env_vars()
-    _global_config.parse_cli_args(cli_arg_group)
-    _global_config.parse_cfg_file()  # After cli args because the CLI args might tell us where to look for the config file
+    _global_config.parse_cli_args(cli_arg_parser, args=args)
+    # Parse cfg options after cli args because the cli args might tell us where to look for the config file
+    # The precedence order will be correctly rearranged automatically
+    _global_config.parse_cfg_file()
 
     _global_config.finish_init()
     return _global_config

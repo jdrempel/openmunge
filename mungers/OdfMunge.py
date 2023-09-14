@@ -70,7 +70,7 @@ class OdfMunge(MungerBase):
                                 continue
 
             output_file_name = pathlib.Path(odf_name).with_suffix(extension)
-            output_file_path = self.args.output_dir / output_file_name
+            output_file_path = self.config.output_dir / output_file_name
 
             with open(output_file_path, 'wb') as f:
                 num_written = f.write(root.binary)
