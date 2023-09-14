@@ -1,4 +1,5 @@
 import hashlib
+import os
 import pathlib
 import shutil
 import subprocess
@@ -6,7 +7,7 @@ import time
 from abc import abstractmethod, ABC
 
 from jobs.JobRunner import JobStatus, COMPLETE_STATUSES
-from util.config import get_global_args, get_global_config, setup_global_config
+from core.config import get_global_config
 from util.constants import Platform
 
 
@@ -28,7 +29,7 @@ class JobBase(ABC):
         self.project_dir = project_dir
         self.platform = platform
 
-        setup_global_config()
+        self.config = get_global_config()
 
     def job_id(self):
         munge_type = self._get_name_prefix()
@@ -84,10 +85,6 @@ class JobBase(ABC):
         cmd.append(str(app_path))
         cmd.append(self.get_task())
 
-        args = get_global_args()
-        cmd.extend(['--log-level', args.log_level])
-        cmd.extend(['--project-dir', str(args.project_dir)])
-        cmd.extend(['--platform', args.platform])
         cmd.extend(['--source-dir', str(self.source_dir)])
         cmd.extend(['--output-dir', str(self.get_output_dir())])
 
@@ -99,17 +96,18 @@ class JobBase(ABC):
 
         self.runner_log = job_runner_log
 
-        cwd = get_global_config('global.cwd')
         # Set up log file for this job
-        self.log_file_path = pathlib.Path(cwd) / '{j_id}.log'.format(j_id=self.job_id())
+        self.log_file_path = self.config.cwd / '{j_id}.log'.format(j_id=self.job_id())
         self.log_file = open(self.log_file_path, 'w')
 
     def execute(self):
         self.time_start = time.time()
         # popen stuff...
         job_args = self.build_cli_args()
+        sub_env = os.environ | self.config.get_options_as_env_dict('project_dir', 'platform', 'config_file',
+                                                                   'log_level')
         self.runner_log.info('{j_id} args: {args}'.format(j_id=self.job_id(), args=' '.join(job_args)))
-        self.process = subprocess.Popen(job_args, stdout=self.log_file, stderr=self.log_file)
+        self.process = subprocess.Popen(job_args, stdout=self.log_file, stderr=self.log_file, env=sub_env)
 
     def update(self):
         ...

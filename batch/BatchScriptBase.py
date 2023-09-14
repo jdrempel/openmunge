@@ -1,11 +1,18 @@
-import argparse
 import pathlib
 import sys
 from abc import abstractmethod
 
 from core.ScriptBase import ScriptBase
 from jobs.JobRunner import JobRunner
-from util.constants import Platform, ALL_PLATFORMS
+from core.config import Config
+
+
+class BatchScriptBaseConfig(Config):
+    def setup_options(self):
+        self.add_option('source_dir',
+                        alts=['-s'],
+                        type=pathlib.Path,
+                        help='The location in which all input files are contained.')
 
 
 class BatchScriptBase(ScriptBase):
@@ -18,37 +25,16 @@ class BatchScriptBase(ScriptBase):
         self.job_runner = None
 
     def create_base_args(self):
-        self.arg_parser = argparse.ArgumentParser()
+        pass
 
-        group = self.arg_parser.add_argument_group('Base Task Options')
-        group.add_argument('-s', '--source-dir',
-                           type=pathlib.Path,
-                           required=True,
-                           help='The location in which all input files are contained.')
-        group.add_argument('-p', '--platform',
-                           type=Platform,
-                           required=True,
-                           choices=ALL_PLATFORMS,
-                           help='The platform to target for munging files. Choices: %(choices)s. Default: %(default)s.')
-
-        group = self.arg_parser.add_argument_group('Global Options')
-        group.add_argument('-P', '--project-dir',
-                           type=pathlib.Path,
-                           required=True,
-                           help='The location of the project data to be munged. This should point to the data_ABC '
-                                'directory (assuming ABC is the 3-letter code for the project).')
-        group.add_argument('-ll', '--log-level',
-                           type=str,
-                           choices=('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'),
-                           default='INFO',
-                           help='The minimum level of log message to be displayed. '
-                                'Choices: %(choices)s. Default: %(default)s.')
+    def create_base_config(self):
+        base_config = BatchScriptBaseConfig(self.name.lower())
+        base_config.setup(self.arg_parser, args=self.job_args, only_known=True)
+        return base_config
 
     def start(self):
         self.job_runner = JobRunner()
-        self.logger.info('Starting {}...'.format(self.name))
-        self.logger.info('{name} Setup:\n\tConfig File: {config}\n\tArgs: {args}'
-                         .format(name=self.name, config=None, args=' '.join(sys.argv)))
+        self.print_setup_info()
         try:
             self.run()
         except Exception as e:

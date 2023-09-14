@@ -20,6 +20,11 @@ the project. OpenMunge is **not** intending to:
   (e.g. `.png` images for textures instead of `.tga`)
 - Munge and/or pack assets for any other games, including SWBF (2004)
 
+### Motivation
+The primary motivation for the project is fun and learning, but the author
+would also like to be able to create SWBF2 maps and mods while working in a
+Linux environment, and this is not something that is otherwise possible.
+
 ## Installation
 1. Ensure Python 3.10 (minimum) is installed
 2. Download the `openmunge` source

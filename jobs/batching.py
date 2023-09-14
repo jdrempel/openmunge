@@ -1,5 +1,5 @@
 from jobs.BatchJob import WorldBatchJob, CommonBatchJob, SideBatchJob, LocalizeBatchJob
-from util.config import get_global_args
+from core.config import get_global_config
 from util.constants import MUNGE_ALL
 
 
@@ -63,7 +63,7 @@ def get_world_jobs(args) -> list:
 
 
 def get_work_batches() -> list:
-    args = get_global_args()
+    args = get_global_config()
 
     batches = []
 

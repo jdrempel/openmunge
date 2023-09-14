@@ -1,0 +1,5 @@
+[GameObjectClass]
+ClassParent      = "foobar"
+
+[Properties]
+Lighting        = "Dynamic"

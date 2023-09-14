@@ -7,7 +7,7 @@ class WorldBatchScript(BatchScriptBase):
         super().__init__('WorldBatch')
 
     def run(self):
-        base_args = (self.args.source_dir, self.args.project_dir, self.args.platform)
+        base_args = (self.config.source_dir, self.config.project_dir, self.config.platform)
 
         batch = []
 
@@ -21,7 +21,7 @@ class WorldBatchScript(BatchScriptBase):
         ])
 
         path_jobs = []
-        for wld_file in self.args.source_dir.glob('**/*.wld'):
+        for wld_file in self.config.source_dir.glob('**/*.wld'):
             path_jobs.append(ConfigMungeJob(['$*.pth'], *base_args, output_file=wld_file.stem.lower(),
                                             extension='.path', chunk_id='path'))
         batch.extend(path_jobs)
