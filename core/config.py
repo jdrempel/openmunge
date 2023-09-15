@@ -6,11 +6,13 @@ from collections import ChainMap
 
 from util.arg_parsing import PositiveNumberArgumentType
 from util.constants import Platform, ALL_PLATFORMS, ENV_VAR_PREFIX
+from util.logs import setup_logger
 
 
 class Config:
     def __init__(self, name):
         self.name = name
+        self.logger = setup_logger('{}Config'.format(self.name))
 
         self._initialized = False
 
@@ -18,6 +20,13 @@ class Config:
         self._defaults = dict()
         self._parsed_options = ChainMap()
         self._config_parser = cfgp.ConfigParser()
+
+        self.add_option('config_file',
+                        type=pathlib.Path,
+                        default=pathlib.Path.home() / '.mungerc',
+                        show_in_cfg=False,
+                        help='Location of a config file to use for global options. Command-line options take precedent '
+                             'over option values read from this file. Default: {default}')
 
         self.setup_options()
         self.generate_defaults()
@@ -126,6 +135,7 @@ class Config:
                 raise KeyError('An option with dest {} already exists.'.format(dest))
 
         self._options[name] = new_option
+        self.logger.debug('Added option {}'.format(name))
 
     def setup_options(self):
         pass
@@ -136,7 +146,17 @@ class Config:
                 continue
             if name in self._defaults:
                 raise KeyError('A default value for option {} has already been provided.'.format(name))
-            self._defaults[opt['dest']] = opt['default']
+            convert_to_type = opt['type']
+            dest = opt['dest']
+            default = opt['default']
+            try:
+                self._defaults[dest] = convert_to_type(default)
+            except (TypeError, argparse.ArgumentTypeError):
+                if default is None:
+                    try:
+                        self._defaults[dest] = convert_to_type('')
+                    except (TypeError, argparse.ArgumentTypeError):
+                        self._defaults[dest] = None
         self._parsed_options.maps.clear()
         self._parsed_options.maps.append(self._defaults)
 
@@ -152,7 +172,10 @@ class Config:
                                ('type', 'required', 'choices', 'dest', 'metavar', 'default', 'help')}
             argument_kwargs['default'] = None  # Because we defer default-handling to a lower level of config
             argument_kwargs['help'] = argument_kwargs['help'].format(default=self._defaults.get(opt['name']))
-            group.add_argument(*argument_args, **argument_kwargs)
+            try:
+                group.add_argument(*argument_args, **argument_kwargs)
+            except argparse.ArgumentError:
+                continue
 
     def _validate_raw_option_value(self, name, value):
         opt = self._options[name]
@@ -185,6 +208,8 @@ class Config:
         cfg_options = dict()
         if self._config_parser.has_section(self.name):
             for k, v in self._config_parser.items(self.name):
+                if k not in self._options:
+                    continue
                 opt = self._options[k]
                 typed_value = self._validate_raw_option_value(k, v)
                 dest = opt['dest']
@@ -211,16 +236,27 @@ class Config:
 
     def setup(self, cli_arg_parser, args=None, only_known=False):
         if self._initialized:
+            self.logger.info('Already initialized, aborting setup')
             return []
 
         global_group = cli_arg_parser.add_argument_group('Global Options')
         self.add_options_to_arg_parser(global_group)
 
-        self.parse_env_vars()
-        remaining_args = self.parse_cli_args(cli_arg_parser, args=args, only_known=only_known)
+        try:
+            self.parse_env_vars()
+        except ValueError as ve:
+            self.logger.exception('Environment variable parsing error', exc_info=ve)
+        try:
+            remaining_args = self.parse_cli_args(cli_arg_parser, args=args, only_known=only_known)
+        except (ValueError, argparse.ArgumentError, argparse.ArgumentTypeError) as e:
+            self.logger.exception('Command-line argument parsing error', exc_info=e)
+            remaining_args = []
         # Parse cfg options after cli args because the cli args might tell us where to look for the config file
         # The precedence order will be correctly rearranged automatically
-        self.parse_cfg_file()
+        try:
+            self.parse_cfg_file()
+        except (ValueError, OSError) as e:
+            self.logger.exception('Config file parsing error', exc_info=e)
 
         self._initialized = True
 
@@ -247,13 +283,6 @@ class GlobalConfig(Config):
                         sections=[self.name],
                         help='The location of the project data to be munged. This should point to the data_ABC '
                              'directory (assuming ABC is the 3-letter code for the project).')
-
-        self.add_option('config_file',
-                        type=pathlib.Path,
-                        default=pathlib.Path.home() / '.mungerc',
-                        show_in_cfg=False,
-                        help='Location of a config file to use for global options. Command-line options take precedent '
-                             'over option values read from this file. Default: {default}')
 
         self.add_option('log_level',
                         alts=['-ll'],

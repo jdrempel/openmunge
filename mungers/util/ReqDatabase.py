@@ -38,6 +38,8 @@ class ReqDatabase(metaclass=SingletonMeta):
     def write(self, path: pathlib.Path):
         def quote(s: str) -> str:
             return '"{}"'.format(s.strip('"'))
+        if not self.sections:
+            return
         with path.open('w', newline='\r\n') as f:
             lines = ['', 'ucft', '{']
             for section in self.sections.values():
@@ -47,7 +49,8 @@ class ReqDatabase(metaclass=SingletonMeta):
                 section_lines.append('}')
                 lines.extend(['\t' + line for line in section_lines if line.strip()])
             lines.append('}')
-            f.write('\n'.join(lines))
+            num_written = f.write('\n'.join(lines))
+        return num_written > 0
 
     def clear(self):
         self.sections.clear()
