@@ -71,7 +71,8 @@ class WorldMunge(MungerBase):
         self.logger.info('Searching for .bar, .rgn, and .hnt files')
         for input_file in self.input_files:
             includes = self.get_included_files(input_file)
-            self.logger.info('Included files for {}: {}'.format(input_file, [str(x.name) for x in includes]))
+            self.logger.info('Included files for {}: {}'.format(input_file, [str(x.name) for x in includes
+                                                                             if x is not None]))
         world_file_include_file_map = {input_file: tuple(self.get_included_files(input_file))
                                        for input_file in self.input_files}
 
@@ -194,5 +195,5 @@ class WorldMunge(MungerBase):
                 db.get_section('class').append(instance.get_class_name())
 
             req_file_path = pathlib.Path(str(root_config_file_path) + '.req')
-            db.write(req_file_path)
-            self.logger.debug('Wrote requirements db to {}'.format(req_file_path))
+            if db.write(req_file_path):
+                self.logger.debug('Wrote requirements db to {}'.format(req_file_path))

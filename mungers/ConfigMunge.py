@@ -74,5 +74,5 @@ class ConfigMunge(MungerBase):
         db = ReqDatabase()
 
         req_file_path = pathlib.Path(str(root_config_file_path) + '.req')
-        db.write(req_file_path)
-        self.logger.debug('Wrote requirements db to {}'.format(req_file_path))
+        if db.write(req_file_path):
+            self.logger.debug('Wrote requirements db to {}'.format(req_file_path))

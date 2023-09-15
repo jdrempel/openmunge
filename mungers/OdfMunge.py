@@ -79,7 +79,7 @@ class OdfMunge(MungerBase):
             self.logger.info('Finished munging files. Writing output...')
 
             req_file_path = pathlib.Path(str(output_file_path) + '.req')
-            db.write(req_file_path)
+            if db.write(req_file_path):
+                self.logger.debug('Wrote requirements db to {}'.format(req_file_path))
             db.clear()  # Important so we don't write all the different odf data to the same db
 
-            self.logger.debug('Wrote requirements db to {}'.format(req_file_path))
