@@ -149,14 +149,13 @@ class Config:
             convert_to_type = opt['type']
             dest = opt['dest']
             default = opt['default']
-            try:
-                self._defaults[dest] = convert_to_type(default)
-            except (TypeError, argparse.ArgumentTypeError):
-                if default is None:
-                    try:
-                        self._defaults[dest] = convert_to_type('')
-                    except (TypeError, argparse.ArgumentTypeError):
-                        self._defaults[dest] = None
+            if default is not None:
+                try:
+                    self._defaults[dest] = convert_to_type(default)
+                except (TypeError, argparse.ArgumentTypeError):
+                    self._defaults[dest] = None
+            else:
+                self._defaults[dest] = None
         self._parsed_options.maps.clear()
         self._parsed_options.maps.append(self._defaults)
 
