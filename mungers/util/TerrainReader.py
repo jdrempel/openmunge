@@ -103,7 +103,7 @@ class TerrainReader(BinaryReader):
         extra_lightmap = False
 
         if header.version == TerrainVersion.SWBF2:
-            active_flags_byte = self.read_byte()
+            active_flags_byte = self.read_u8()
             terrain.active_flags = TerrainActiveFlags(active_flags_byte)
             extra_lightmap = terrain.active_flags.extra_lightmap
 
@@ -119,7 +119,7 @@ class TerrainReader(BinaryReader):
         # Decals (unused)
         for _ in range(NUM_TEXTURES):
             self.skip(TERRAIN_STR_SIZE)
-        decal_tile_count = self.read_int()
+        decal_tile_count = self.read_u32()
         for i in range(decal_tile_count):
             self.skip(SZ_UINT32*3)  # 3x u32
             self.skip(SZ_FLOAT*2*4)  # 4x vecf2
@@ -148,7 +148,7 @@ class TerrainReader(BinaryReader):
                 if active_offset <= y_ < active_end:
                     for x_ in range(terrain.length):
                         for t_ in range(NUM_TEXTURES):
-                            output[x_][y_ - active_offset][t_] = self.read_byte()
+                            output[x_][y_ - active_offset][t_] = self.read_u8()
                 else:
                     self.skip(terrain.length*NUM_TEXTURES)
                 self.skip(active_offset*NUM_TEXTURES)
@@ -157,11 +157,11 @@ class TerrainReader(BinaryReader):
         texture_weight_map = defaultdict(lambda: defaultdict(dict))
 
         try:
-            terrain.height_map = read_map(self.read_short, SZ_UINT16)
-            terrain.colour_map = read_map(self.read_int, SZ_UINT32)
-            terrain.light_map = read_map(self.read_int, SZ_UINT32)
+            terrain.height_map = read_map(self.read_u16, SZ_UINT16)
+            terrain.colour_map = read_map(self.read_u32, SZ_UINT32)
+            terrain.light_map = read_map(self.read_u32, SZ_UINT32)
             if extra_lightmap:
-                terrain.light_map_extra = read_map(self.read_int, SZ_UINT32)
+                terrain.light_map_extra = read_map(self.read_u32, SZ_UINT32)
             texture_weight_map = read_texture_weight_map()
         except IOError:
             # Some stock .ter files end without all data present
@@ -185,7 +185,7 @@ class TerrainReader(BinaryReader):
             self.skip(cluster_active_offset*SZ_UINT32)
             if cluster_active_offset <= y < cluster_active_end:
                 for x in range(loaded_cluster_length):
-                    cluster_flags = self.read_int()
+                    cluster_flags = self.read_u32()
                     terrain.water_map[x][y-cluster_active_offset] = bool(cluster_flags & CLUSTER_INFO_WATER)
             else:
                 self.skip(loaded_cluster_length*SZ_UINT32)
@@ -199,23 +199,23 @@ class TerrainReader(BinaryReader):
     def read_header(self):
         header = TerrainHeader(
             magic_number=self.read_bytes(4),
-            version=self.read_int(),
-            active_left_offset=self.read_short(),
-            active_top_offset=self.read_short(),
-            active_right_offset=self.read_short(),
-            active_bottom_offset=self.read_short(),
-            ex_header_size=self.read_int(),
-            texture_scales=[self.read_float() for _ in range(NUM_TEXTURES)],
-            texture_axes=[self.read_byte() for _ in range(NUM_TEXTURES)],
-            texture_rotations=[self.read_float() for _ in range(NUM_TEXTURES)],
-            height_scale=self.read_float(),
-            grid_scale=self.read_float(),
-            pre_lit=bool(self.read_int()),
-            terrain_length=self.read_int(),
-            foliage_patch_size=self.read_int(),
+            version=self.read_u32(),
+            active_left_offset=self.read_u16(),
+            active_top_offset=self.read_u16(),
+            active_right_offset=self.read_u16(),
+            active_bottom_offset=self.read_u16(),
+            ex_header_size=self.read_u32(),
+            texture_scales=[self.read_f32() for _ in range(NUM_TEXTURES)],
+            texture_axes=[self.read_u8() for _ in range(NUM_TEXTURES)],
+            texture_rotations=[self.read_f32() for _ in range(NUM_TEXTURES)],
+            height_scale=self.read_f32(),
+            grid_scale=self.read_f32(),
+            pre_lit=bool(self.read_u32()),
+            terrain_length=self.read_u32(),
+            foliage_patch_size=self.read_u32(),
         )
         if header.magic_number != b'TERR':
-            raise ValueError('Magic number != TERR, file {} may be corrupt.'.format(self.path))
+            raise ValueError('Magic number != TERR, file {} may be corrupt.'.format(self._stream.name))
         if header.terrain_length > 1024:
             raise ValueError('Terrain length is too long. Max is 1024.')
         if header.foliage_patch_size != FOLIAGE_PATCH_SIZE:
@@ -226,22 +226,22 @@ class TerrainReader(BinaryReader):
         water_settings = []
         for _ in range(NUM_WATER_LAYERS):
             water_settings.append(WaterSettings(
-                height=self.read_float(),
-                unused=[self.read_float() for _ in range(3)],
-                u_vel=self.read_float(),
-                v_vel=self.read_float(),
-                u_rep=self.read_float(),
-                v_rep=self.read_float(),
-                colour=unpack_srgb_bgra(self.read_int()),
+                height=self.read_f32(),
+                unused=[self.read_f32() for _ in range(3)],
+                u_vel=self.read_f32(),
+                v_vel=self.read_f32(),
+                u_rep=self.read_f32(),
+                v_rep=self.read_f32(),
+                colour=unpack_srgb_bgra(self.read_u32()),
                 texture=self.read_terr_str(),
             ))
         return water_settings[1]
 
     def read_unused_foliage_section(self):
-        foliage_cluster_count = self.read_int()
+        foliage_cluster_count = self.read_u32()
         for i in range(foliage_cluster_count):
             self.skip(4*6)  # 6x u32
-        foliage_model_count = self.read_int()
+        foliage_model_count = self.read_u32()
         for i in range(foliage_model_count):
             self.skip(4*7)  # 7x u32
 

@@ -19,6 +19,7 @@ the project. OpenMunge is **not** intending to:
 - Allow previously-incompatible file types to be used in SWBF2 modded content
   (e.g. `.png` images for textures instead of `.tga`)
 - Munge and/or pack assets for any other games, including SWBF (2004)
+- Fully support Playstation 2 and/or XBOX munging
 
 ### Motivation
 The primary motivation for the project is fun and learning, but the author
@@ -84,7 +85,7 @@ That being said, here is a very rough set of goals in no particular order:
   - [x] World (objects, regions, hints, barriers)
   - [x] Paths
   - [x] AI Planning
-  - [ ] Sky
+  - [x] Sky
   - [ ] Terrain
 - [ ] Common
   - [ ] Effects

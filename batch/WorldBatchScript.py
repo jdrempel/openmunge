@@ -40,4 +40,4 @@ class WorldBatchScript(BatchScriptBase):
         self.job_runner.add_batch(batch)
         self.job_runner.start()
         self.job_runner.wait()
-        self.logger.info('World done!')
+        self.logger.info('World {} done!'.format(self.config.source_dir.stem))
