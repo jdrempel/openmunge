@@ -42,23 +42,39 @@ class Chunk:
         self.binary.extend(str_bytes)
 
     def write_byte(self, num):
-        num_bytes = struct.pack('<B', num)
-        self.binary.extend(num_bytes)
+        packed = struct.pack('<B', num)
+        self.binary.extend(packed)
+
+    def write_short(self, num):
+        packed = struct.pack('<H', int(num))
+        self.binary.extend(packed)
 
     def write_bytes(self, data):
         self.binary.extend(data)
 
     def write_int(self, num):
-        num_bytes = struct.pack('<I', int(num))
-        self.binary.extend(num_bytes)
-
-    def write_short(self, num):
-        num_bytes = struct.pack('<H', int(num))
-        self.binary.extend(num_bytes)
+        packed = struct.pack('<I', int(num))
+        self.binary.extend(packed)
 
     def write_float(self, num):
-        num_bytes = struct.pack('<f', float(num))
-        self.binary.extend(num_bytes)
+        packed = struct.pack('<f', float(num))
+        self.binary.extend(packed)
+
+    def write_vec2(self, vec):
+        packed = struct.pack('<2f', *vec.flatten())
+        self.binary.extend(packed)
+
+    def write_vec3(self, vec):
+        packed = struct.pack('<3f', *vec.flatten())
+        self.binary.extend(packed)
+
+    def write_vec4(self, vec):
+        packed = struct.pack('<4f', *vec.flatten())
+        self.binary.extend(packed)
+
+    def write_quat(self, quat):
+        packed = struct.pack('<4f', quat.x, quat.y, quat.z, quat.w)
+        self.binary.extend(packed)
 
     @contextmanager
     def open(self, parent=None):

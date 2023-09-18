@@ -46,6 +46,14 @@ class BoundingBox:
     extents: Vector3
     sphere_radius: float
 
+    @property
+    def min(self):
+        return self.origin - abs(self.extents)
+
+    @property
+    def max(self):
+        return self.origin + abs(self.extents)
+
 
 @dataclass
 class SceneInfo:
@@ -81,3 +89,7 @@ class Model:
     model_type: ModelType
     transform: ModelTransform
     geometries: List[Geometry]
+
+    @property
+    def segments(self):
+        return [segment for geometry in self.geometries for segment in geometry.segments]

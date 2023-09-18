@@ -30,7 +30,7 @@ class ScriptBase:
                          '\tConfig File: {config}\n'
                          '\tArgs: {args}\n'
                          '\tEnv: {env}'
-                         .format(name=self.name, config=None, args=' '.join(sys.argv),
+                         .format(name=self.name, config=self.config.config_file, args=' '.join(sys.argv),
                                  env='; '.join(self.get_env_vars_strs())))
 
     @abstractmethod

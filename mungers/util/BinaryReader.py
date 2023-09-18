@@ -119,6 +119,9 @@ class BinaryReader:
     def get_position(self):
         return self._stream.tell()
 
+    def could_have_child(self):
+        return self.end - self._stream.tell() >= 8
+
     def align(self, size=4) -> None:
         pos = self._stream.tell()
         dist = pos % size
