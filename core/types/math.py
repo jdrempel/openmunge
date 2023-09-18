@@ -1,5 +1,5 @@
 import math
-from typing import Iterable
+from typing import Iterable, Union
 
 
 class Vector2:
@@ -23,8 +23,14 @@ class Vector2:
     def __repr__(self):
         return str(self)
 
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
     def __abs__(self):
         return Vector2(abs(self.x), abs(self.y))
+
+    def __neg__(self):
+        return Vector3(-self.x, -self.y)
 
     def __add__(self, other):
         return Vector2(self.x + other.x, self.y + other.y)
@@ -32,6 +38,7 @@ class Vector2:
     def __iadd__(self, other):
         self.x += other.x
         self.y += other.y
+        return self
 
     def __sub__(self, other):
         return Vector2(self.x - other.x, self.y - other.y)
@@ -39,32 +46,35 @@ class Vector2:
     def __isub__(self, other):
         self.x -= other.x
         self.y -= other.y
+        return self
 
     def __mul__(self, other):
-        if isinstance(other, float):
+        if isinstance(other, (float, int)):
             return Vector3(other * self.x, other * self.y)
         return Vector2(self.x * other.x, self.y * other.y)
 
     def __imul__(self, other):
-        if isinstance(other, float):
+        if isinstance(other, (float, int)):
             self.x *= other
             self.y *= other
         else:
             self.x *= other.x
             self.y *= other.y
+        return self
 
     def __truediv__(self, other):
-        if isinstance(other, float):
+        if isinstance(other, (float, int)):
             return Vector2(self.x / other, self.y / other)
         return Vector2(self.x / other.x, self.y / other.y)
 
     def __itruediv__(self, other):
-        if isinstance(other, float):
+        if isinstance(other, (float, int)):
             self.x /= other
             self.y /= other
         else:
             self.x /= other.x
             self.y /= other.y
+        return self
 
     def dot(self, other) -> float:
         return self.x * other.x + self.y * other.y
@@ -102,8 +112,14 @@ class Vector3:
     def __repr__(self):
         return str(self)
 
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y and self.z == other.z
+
     def __abs__(self):
         return Vector3(abs(self.x), abs(self.y), abs(self.z))
+
+    def __neg__(self):
+        return Vector3(-self.x, -self.y, -self.z)
 
     def __add__(self, other):
         return Vector3(self.x+other.x, self.y+other.y, self.z+other.z)
@@ -112,6 +128,7 @@ class Vector3:
         self.x += other.x
         self.y += other.y
         self.z += other.z
+        return self
 
     def __sub__(self, other):
         return Vector3(self.x-other.x, self.y-other.y, self.z-other.z)
@@ -120,14 +137,15 @@ class Vector3:
         self.x -= other.x
         self.y -= other.y
         self.z -= other.z
+        return self
 
     def __mul__(self, other):
-        if isinstance(other, float):
+        if isinstance(other, (float, int)):
             return Vector3(other*self.x, other*self.y, other*self.z)
         return Vector3(self.x*other.x, self.y*other.y, self.z*other.z)
 
     def __imul__(self, other):
-        if isinstance(other, float):
+        if isinstance(other, (float, int)):
             self.x *= other
             self.y *= other
             self.z *= other
@@ -135,14 +153,15 @@ class Vector3:
             self.x *= other.x
             self.y *= other.y
             self.z *= other.z
+        return self
 
     def __truediv__(self, other):
-        if isinstance(other, float):
+        if isinstance(other, (float, int)):
             return Vector3(self.x/other, self.y/other, self.z/other)
         return Vector3(self.x/other.x, self.y/other.y, self.z/other.z)
 
     def __itruediv__(self, other):
-        if isinstance(other, float):
+        if isinstance(other, (float, int)):
             self.x /= other
             self.y /= other
             self.z /= other
@@ -150,6 +169,7 @@ class Vector3:
             self.x /= other.x
             self.y /= other.y
             self.z /= other.z
+        return self
 
     def dot(self, other) -> float:
         return self.x*other.x + self.y*other.y + self.z*other.z
@@ -194,8 +214,14 @@ class Vector4:
     def __repr__(self):
         return str(self)
 
+    def __eq__(self, other):
+        return self.w == other.w and self.x == other.x and self.y == other.y and self.z == other.z
+
     def __abs__(self):
         return Vector4(abs(self.w), abs(self.x), abs(self.y), abs(self.z))
+
+    def __neg__(self):
+        return Vector4(-self.w, -self.x, -self.y, -self.z)
 
     def __add__(self, other):
         return Vector4(self.w+other.w, self.x+other.x, self.y+other.y, self.z+other.z)
@@ -205,6 +231,7 @@ class Vector4:
         self.x += other.x
         self.y += other.y
         self.z += other.z
+        return self
 
     def __sub__(self, other):
         return Vector4(self.w-other.w, self.x-other.x, self.y-other.y, self.z-other.z)
@@ -214,14 +241,15 @@ class Vector4:
         self.x -= other.x
         self.y -= other.y
         self.z -= other.z
+        return self
 
     def __mul__(self, other):
-        if isinstance(other, float):
+        if isinstance(other, (float, int)):
             return Vector4(other*self.w, other*self.x, other*self.y, other*self.z)
         return Vector4(self.w*other.w, self.x*other.x, self.y*other.y, self.z*other.z)
 
     def __imul__(self, other):
-        if isinstance(other, float):
+        if isinstance(other, (float, int)):
             self.w *= other
             self.x *= other
             self.y *= other
@@ -231,14 +259,15 @@ class Vector4:
             self.x *= other.x
             self.y *= other.y
             self.z *= other.z
+        return self
 
     def __truediv__(self, other):
-        if isinstance(other, float):
+        if isinstance(other, (float, int)):
             return Vector4(self.w/other, self.x/other, self.y/other, self.z/other)
         return Vector4(self.w/other.w, self.x/other.x, self.y/other.y, self.z/other.z)
 
     def __itruediv__(self, other):
-        if isinstance(other, float):
+        if isinstance(other, (float, int)):
             self.w /= other
             self.x /= other
             self.y /= other
@@ -248,6 +277,7 @@ class Vector4:
             self.x /= other.x
             self.y /= other.y
             self.z /= other.z
+        return self
 
     def dot(self, other) -> float:
         return self.w*other.w + self.x*other.x + self.y*other.y + self.z*other.z
@@ -266,7 +296,7 @@ Quaternion = Vector4
 class Matrix33:
     __slots__ = 'r0', 'r1', 'r2'
 
-    def __init__(self, vectors: Iterable[Vector3] = None, values: Iterable[float] = None):
+    def __init__(self, vectors: Iterable[Vector3] = None, values: Iterable[Union[float, int]] = None):
         self.r0 = self.r1 = self.r2 = None
         if vectors:
             self.r0, self.r1, self.r2 = vectors
