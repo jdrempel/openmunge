@@ -55,7 +55,7 @@ class MyTestCase(unittest.TestCase):
             with BinaryReader(f) as root:
                 with BinaryReader(f, parent=root) as ucfb:
                     with BinaryReader(f, parent=ucfb) as hdr1:
-                        with BinaryReader(f, parent=hdr1) as info:
+                        with BinaryReader(f, parent=hdr1):
                             string = hdr1.read_str()
                             self.assertEqual(string, 'foobar')
 
@@ -64,7 +64,7 @@ class MyTestCase(unittest.TestCase):
         with binary_data_bin_file.open('rb') as f:
             with BinaryReader(f) as root:
                 with BinaryReader(f, parent=root) as ucfb:
-                    with BinaryReader(f, parent=ucfb) as hdr1:
+                    with BinaryReader(f, parent=ucfb):
                         pass
                     with BinaryReader(f, parent=ucfb) as hdr2:
                         f1 = hdr2.read_f32()

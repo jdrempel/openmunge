@@ -2,6 +2,84 @@ import math
 from typing import Iterable
 
 
+class Vector2:
+    __slots__ = 'x', 'y'
+
+    def __init__(self, x: float = 0.0, y: float = 0.0):
+        self.x = x
+        self.y = y
+
+    @classmethod
+    def zero(cls):
+        return cls()
+
+    @classmethod
+    def ones(cls):
+        return cls(1.0, 1.0)
+
+    def __str__(self):
+        return 'Vector2<{0.x}, {0.y}>'.format(self)
+
+    def __repr__(self):
+        return str(self)
+
+    def __abs__(self):
+        return Vector2(abs(self.x), abs(self.y))
+
+    def __add__(self, other):
+        return Vector2(self.x + other.x, self.y + other.y)
+
+    def __iadd__(self, other):
+        self.x += other.x
+        self.y += other.y
+
+    def __sub__(self, other):
+        return Vector2(self.x - other.x, self.y - other.y)
+
+    def __isub__(self, other):
+        self.x -= other.x
+        self.y -= other.y
+
+    def __mul__(self, other):
+        if isinstance(other, float):
+            return Vector3(other * self.x, other * self.y)
+        return Vector2(self.x * other.x, self.y * other.y)
+
+    def __imul__(self, other):
+        if isinstance(other, float):
+            self.x *= other
+            self.y *= other
+        else:
+            self.x *= other.x
+            self.y *= other.y
+
+    def __truediv__(self, other):
+        if isinstance(other, float):
+            return Vector2(self.x / other, self.y / other)
+        return Vector2(self.x / other.x, self.y / other.y)
+
+    def __itruediv__(self, other):
+        if isinstance(other, float):
+            self.x /= other
+            self.y /= other
+        else:
+            self.x /= other.x
+            self.y /= other.y
+
+    def dot(self, other) -> float:
+        return self.x * other.x + self.y * other.y
+
+    def magnitude(self):
+        return math.sqrt(self.x ** 2 + self.y ** 2)
+
+    def normalized(self):
+        # noinspection PyTypeChecker
+        return self / self.magnitude()
+
+    def flatten(self):
+        return self.x, self.y
+
+
 class Vector3:
     __slots__ = 'x', 'y', 'z'
 
@@ -180,6 +258,9 @@ class Vector4:
     def normalized(self):
         # noinspection PyTypeChecker
         return self / self.magnitude()
+
+
+Quaternion = Vector4
 
 
 class Matrix33:

@@ -3,7 +3,7 @@ import pathlib
 import struct
 
 from core.config import get_global_config
-from core.types.math import Vector3, Vector4, Matrix33
+from core.types.math import Vector3, Vector4, Matrix33, Vector2
 from util.logs import setup_logger
 
 
@@ -93,11 +93,14 @@ class BinaryReader:
         result = struct.unpack(f'<{n}f', buffer)
         return result[0] if n == 1 else result
 
+    def read_vec2(self):
+        return Vector2(*self.read_f32(2))
+
     def read_vec3(self):
-        return Vector3(self.read_f32(3))
+        return Vector3(*self.read_f32(3))
 
     def read_vec4(self):
-        return Vector4(self.read_f32(4))
+        return Vector4(*self.read_f32(4))
 
     def read_quat(self):
         rot = self.read_f32(4)
@@ -106,6 +109,10 @@ class BinaryReader:
     def read_mat33(self):
         values = self.read_f32(3*3)
         return Matrix33(values=values)
+
+    def read_child(self):
+        child = BinaryReader(self._stream, parent=self)
+        return child
 
     # Navigation methods
 
@@ -123,3 +130,11 @@ class BinaryReader:
     def skip(self, n: int) -> None:
         self._stream.seek(n, io.SEEK_CUR)
 
+    def check_next_header(self):
+        try:
+            header = self.read_str_fixed(4)
+        except ValueError:
+            header = ''
+        finally:
+            self.skip(-4)
+        return header
