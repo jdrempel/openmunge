@@ -2,9 +2,12 @@
 __pycache__/
 _outputs/
 
+# Auto-generated artifacts
 *.log
 *.pyc
 *.txt
 
+# Project utilities
 *.sh
+!munge-cmp.sh
 poetry.lock
