@@ -48,7 +48,7 @@ class ConfigMungeJob(MungeJob):
         input_files_deduped = re.sub(r'(_)\1+', '\\1', input_files_str)  # De-duplicate underscores
         input_files_stripped = input_files_deduped.strip('_')
         if self.output_file is not None:
-            input_files_stripped += f'_{self.output_file}'
+            input_files_stripped += f'_{self.output_file.lower()}'
         return f'{base_job_id}_{input_files_stripped}'
 
     def build_cli_args(self) -> list:
