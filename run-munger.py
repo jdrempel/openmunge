@@ -8,7 +8,7 @@ log = setup_logger('run-munger')
 
 
 def main():
-    arg_parser = argparse.ArgumentParser()
+    arg_parser = argparse.ArgumentParser(add_help=False)
     arg_parser.add_argument('name',
                             type=str,
                             help='Name of the munger class to load. E.g. to load ConfigMunger call this '

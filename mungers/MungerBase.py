@@ -27,13 +27,14 @@ class MungerBase(ScriptBase):
     def __init__(self, name):
         super().__init__(name)
         self.input_files = []
+        self._display_help = False
 
     def create_base_args(self):
         original_prog = pathlib.Path(sys.argv[0]).name
         short_name = self.name.replace('Munge', '').lower()
         self.arg_parser = argparse.ArgumentParser(prog='{orig} {name}'.format(orig=original_prog, name=short_name))
 
-        group = self.arg_parser.add_argument_group('Base Munge Options')
+        group = self.arg_parser.add_argument_group('Base Munger Options')
         group.add_argument('-i', '--input-files',
                            type=str,
                            nargs='+',
@@ -45,9 +46,9 @@ class MungerBase(ScriptBase):
                            action='store_true',
                            help='When specified, hash strings as magic numbers in the munged files.')
 
-    def create_base_config(self):
+    def create_base_config(self, base_group):
         base_config = MungerBaseConfig(self.name.lower())
-        base_config.setup(self.arg_parser, args=self.job_args, only_known=True)
+        base_config.setup(self.arg_parser, args=self.job_args, only_known=True, group=base_group)
         return base_config
 
     def get_input_files(self):

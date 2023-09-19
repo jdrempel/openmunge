@@ -41,22 +41,22 @@ class ScriptBase:
         pass
 
     @abstractmethod
-    def create_base_config(self):
+    def create_base_config(self, base_group):
         ...
 
-    def create_script_config(self):
+    def create_script_config(self, script_group):
         pass
 
     def init(self, args=None):
         if not self.arg_parser:
-            self.arg_parser = argparse.ArgumentParser()
+            self.arg_parser = argparse.ArgumentParser(add_help=False)
 
         self.config = get_global_config()
         self.job_args = self.config.setup(self.arg_parser, args=args, only_known=True)
-        self.create_base_args()
-        self.config |= self.create_base_config()
-        self.create_script_args()
-        self.config |= self.create_script_config()
+        base_group = self.create_base_args()
+        self.config |= self.create_base_config(base_group)
+        script_group = self.create_script_args()
+        self.config |= self.create_script_config(script_group)
 
         self.logger.setLevel(self.config.log_level)
         for handler in self.logger.handlers:

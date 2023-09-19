@@ -1,3 +1,4 @@
+import argparse
 import pathlib
 import sys
 from abc import abstractmethod
@@ -25,11 +26,13 @@ class BatchScriptBase(ScriptBase):
         self.job_runner = None
 
     def create_base_args(self):
-        pass
+        original_prog = pathlib.Path(sys.argv[0]).name
+        short_name = self.name.replace('Batch', '').lower()
+        self.arg_parser = argparse.ArgumentParser(prog='{orig} {name}'.format(orig=original_prog, name=short_name))
 
-    def create_base_config(self):
+    def create_base_config(self, base_group):
         base_config = BatchScriptBaseConfig(self.name.lower())
-        base_config.setup(self.arg_parser, args=self.job_args, only_known=True)
+        base_config.setup(self.arg_parser, args=self.job_args, only_known=True, group=base_group)
         return base_config
 
     def start(self):

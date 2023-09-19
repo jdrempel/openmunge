@@ -163,11 +163,11 @@ class ModelMunge(MungerBase):
         super().__init__('ModelMunge')
 
     def create_script_args(self):
-        pass
+        return self.arg_parser.add_argument_group('Model Munge Options')
 
-    def create_script_config(self):
+    def create_script_config(self, script_group):
         script_config = ModelMungeConfig(self.name.lower())
-        script_config.setup(self.arg_parser, args=self.job_args, only_known=True)
+        script_config.setup(self.arg_parser, args=self.job_args, only_known=True, group=script_group)
         return script_config
 
     def run(self):

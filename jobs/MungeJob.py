@@ -30,15 +30,18 @@ class MungeJob(JobBase, ABC):
 
 
 class ConfigMungeJob(MungeJob):
-    def __init__(self, input_files: list, source_dir, project_dir, platform, output_file=None, extension=None,
-                 chunk_id=None):
+    def __init__(self, input_files: list, source_dir, project_dir, platform, hash_strings=False, output_file=None,
+                 extension=None, chunk_id=None):
         super().__init__(input_files, source_dir, project_dir, platform)
+        self.hash_strings = hash_strings
         self.output_file = output_file
         self.extension = extension
         self.chunk_id = chunk_id
 
     def build_cli_args(self) -> list:
         cli_args = super().build_cli_args()
+        if self.hash_strings:
+            cli_args.extend(['--hash-strings'])
         if self.output_file is not None:
             cli_args.extend(['--output-file', self.output_file])
         if self.extension is not None:

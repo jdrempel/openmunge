@@ -11,6 +11,9 @@ from core.config import Config
 
 class CfgMungeConfig(Config):
     def setup_options(self):
+        self.add_option('hash_strings',
+                        show_in_cfg=False,
+                        help='When specified, all string values will be hashed')
         self.add_option('output_file',
                         show_in_cfg=False,
                         help='If specified, all intermediate munged output will be merged into a single file with '
@@ -32,9 +35,12 @@ class ConfigMunge(MungerBase):
     def __init__(self):
         super().__init__('ConfigMunge')
 
-    def create_script_config(self):
+    def create_script_args(self):
+        return self.arg_parser.add_argument_group('Config Munge Options')
+
+    def create_script_config(self, script_group):
         script_config = CfgMungeConfig(self.name.lower())
-        script_config.setup(self.arg_parser, args=self.job_args, only_known=True)
+        script_config.setup(self.arg_parser, args=self.job_args, only_known=True, group=script_group)
         return script_config
 
     def run(self):

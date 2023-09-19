@@ -233,13 +233,14 @@ class Config:
         env_vars['cwd'] = pathlib.Path(os.environ.get('PWD'))
         self._parsed_options = self._parsed_options.new_child(env_vars)
 
-    def setup(self, cli_arg_parser, args=None, only_known=False):
+    def setup(self, cli_arg_parser, args=None, only_known=False, group=None):
         if self._initialized:
             self.logger.info('Already initialized, aborting setup')
             return []
 
-        global_group = cli_arg_parser.add_argument_group('Global Options')
-        self.add_options_to_arg_parser(global_group)
+        if group is None:
+            group = cli_arg_parser.add_argument_group('Global Options')
+        self.add_options_to_arg_parser(group)
 
         try:
             self.parse_env_vars()

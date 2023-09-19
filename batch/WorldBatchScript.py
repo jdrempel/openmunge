@@ -30,8 +30,8 @@ class WorldBatchScript(BatchScriptBase):
             PlanningMungeJob(['$*.pln'], *base_args),
             ConfigMungeJob(['$*.sky'], *base_args, chunk_id='sky'),
             ConfigMungeJob(['$*.fx'], *base_args, extension='.envfx', chunk_id='fx'),
-            # ConfigMungeJob(['$*.prp'], *base_args, hash_strings=True, extension='.prop', chunk_id='prp'),
-            # ConfigMungeJob(['$*.bnd'], *base_args, hash_strings=True, extension='.boundary', chunk_id='bnd'),
+            ConfigMungeJob(['$*.prp'], *base_args, hash_strings=True, extension='.prop', chunk_id='prp'),
+            ConfigMungeJob(['$*.bnd'], *base_args, hash_strings=True, extension='.boundary', chunk_id='bnd'),
             # sound...
             ConfigMungeJob(['$*.lgt'], *base_args, extension='.light', chunk_id='lght'),
             ConfigMungeJob(['$*.pvs'], *base_args, extension='.povs', chunk_id='PORT'),
