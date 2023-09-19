@@ -10,6 +10,17 @@ class Chunk:
         self.size = 0
         self.binary = bytearray()
 
+    def __enter__(self):
+        """Only used by root node, others use PARENT.open()"""
+        self.binary.extend(bytes(self.chunk_id, 'ascii'))
+        self.binary.extend([0]*4)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Only used by root node, others use PARENT.open()"""
+        self.update_size()
+        self.align()
+
     @property
     def chunk_id(self):
         return self._chunk_id
@@ -21,6 +32,10 @@ class Chunk:
         self._chunk_id = value
         while len(self._chunk_id) % 4:
             self._chunk_id += '_'
+
+    def align(self, snap=4):
+        while len(self.binary) % snap:
+            self.binary.append(0)
 
     def update_size(self):
         self.size = len(self.binary[8:])
@@ -77,20 +92,32 @@ class Chunk:
         self.binary.extend(packed)
 
     @contextmanager
-    def open(self, parent=None):
-        self.binary.extend(bytes(self.chunk_id, 'ascii'))
-        self.binary.extend([0]*4)
-        yield self
-        self.update_size()
-        while len(self.binary) % 4:
-            self.binary.append(0)
-        if parent is not None:
-            parent.write(self.binary)
+    def open(self, name=None, inst=None):
+        if inst is not None:
+            child = inst
+        elif name is not None:
+            child = Chunk(name)
+        else:
+            raise ValueError('name or instance kwarg must be provided to Chunk.open()')
+        child.binary.extend(bytes(child.chunk_id, 'ascii'))
+        child.binary.extend([0]*4)
+        yield child
+        child.update_size()
+        child.align()
+        self.write(child.binary)
 
 
 if __name__ == '__main__':
-    with Chunk('wrld').open() as world:
-        with Chunk('INFO').open(world) as info:
-            info.write(b'henlo')
+    with Chunk('wrld') as world:
+        with world.open('INFO') as info:
+            info.write_str('henlo')
+            info.align()
+            with info.open('GRUB') as grub:
+                grub.write_int(7)
+                grub.write_float(17.01)
+            with info.open('GRAB') as grab:
+                grab.write_int(3)
+                grab.write_int(1)
+                grab.write_int(4)
 
     pass

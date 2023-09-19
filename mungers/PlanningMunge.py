@@ -22,16 +22,16 @@ class PlanningMunge(MungerBase):
 
         for file_path, plan in file_parse_data_map.items():
             self.logger.info('Munging {file}...'.format(file=file_path))
-            with Chunk('ucfb').open() as root:
-                with plan.open(root):
-                    with Chunk('INFO').open(plan) as info:
+            with Chunk('ucfb') as root:
+                with root.open(inst=plan):
+                    with plan.open('INFO') as info:
                         info.write_short(len(plan.hubs))
                         info.write_short(len(plan.connections))
                         info.write_short(5)  # Num weights
-                    with Chunk('NODE').open(plan) as node:
+                    with plan.open('NODE') as node:
                         for hub in plan.hubs:
                             hub.to_binary(node, plan)
-                    with Chunk('ARCS').open(plan) as arcs:
+                    with plan.open('ARCS') as arcs:
                         for connection in plan.connections:
                             connection.to_binary(arcs)
 

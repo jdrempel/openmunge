@@ -51,14 +51,14 @@ class ConfigMunge(MungerBase):
         self.logger.info('Parsing {} input files'.format(len(self.input_files)))
         file_parse_data_map = {input_file: config_parser.parse_file(input_file) for input_file in self.input_files}
 
-        with Chunk('ucfb').open() as root:
+        with Chunk('ucfb') as root:
             for file_path, config in file_parse_data_map.items():
                 self.logger.info('Munging {file}...'.format(file=file_path))
                 config_name = file_path.stem
                 config.chunk_id = self.config.chunk_id
                 config.config_name = config_name
-                with config.open(root):
-                    with Chunk('NAME').open(config) as name:
+                with root.open(inst=config):
+                    with config.open('NAME') as name:
                         name.write_bytes(config.config_name)
                     for instance in config.instances:
                         instance.to_binary(config)

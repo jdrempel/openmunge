@@ -97,82 +97,82 @@ class WorldMunge(MungerBase):
         for file_path, world in world_file_parse_data_map.items():
             self.logger.info('Munging {file}...'.format(file=file_path))
             world.instances = [inst for inst in world.instances if inst.name in CONFIG_SECTION_WHITELIST]
-            with Chunk('ucfb').open() as root:
-                with world.open(root):
-                    with Chunk('NAME').open(world) as name:
+            with Chunk('ucfb') as root:
+                with root.open(inst=world):
+                    with world.open('NAME') as name:
                         name.write_str(file_path.stem.lower())
                     if world.terrain_name is not None:
-                        with Chunk('TNAM').open(world) as tnam:
+                        with world.open('TNAM') as tnam:
                             tnam.write_str(world.terrain_name)
                     if world.sky_name is not None:
-                        with Chunk('SNAM').open(world) as snam:
+                        with world.open('SNAM') as snam:
                             snam.write_str(world.sky_name)
-                    with Chunk('INFO').open(world) as info:
+                    with world.open('INFO') as info:
                         info.write_int(len(world.regions))
                         info.write_int(len(world.instances))
                     for region in world.regions:
-                        with region.open(world):
-                            with Chunk('INFO').open(region) as info:
-                                with Chunk('TYPE').open(info) as type_:
+                        with world.open(inst=region):
+                            with region.open('INFO') as info:
+                                with info.open('TYPE') as type_:
                                     type_.write_str(region.region_type)
-                                with Chunk('NAME').open(info) as name:
+                                with info.open('NAME') as name:
                                     name.write_str(region.class_info)
-                                with Chunk('XFRM').open(info) as xfrm:
+                                with info.open('XFRM') as xfrm:
                                     for f in region.get_transform():
                                         xfrm.write_float(f)
-                                with Chunk('SIZE').open(info) as size:
+                                with info.open('SIZE') as size:
                                     for f in region.size:
                                         size.write_float(f)
                             for prop in region.body:
                                 if not str(prop.args[0]):
                                     continue
-                                with prop.open(region):
+                                with region.open(inst=prop):
                                     prop.write_bytes(prop.name)
                                     prop.write_str(prop.args[0])
                     for instance in world.instances:
-                        with instance.open(world):
-                            with Chunk('INFO').open(instance) as info:
-                                with Chunk('TYPE').open(info) as type_:
+                        with world.open(inst=instance):
+                            with instance.open('INFO') as info:
+                                with info.open('TYPE') as type_:
                                     type_.write_str(instance.class_)
-                                with Chunk('NAME').open(info) as name:
+                                with info.open('NAME') as name:
                                     name.write_str(instance.label)
-                                with Chunk('XFRM').open(info) as xfrm:
+                                with info.open('XFRM') as xfrm:
                                     for f in instance.get_transform():
                                         xfrm.write_float(f)
                             for prop in instance.body:
                                 if not str(prop.args[0]):
                                     continue
-                                with prop.open(instance):
+                                with instance.open(inst=prop):
                                     prop.write_bytes(prop.name)
                                     prop.write_str(prop.args[0])
                     for hint in world.hints:
-                        with hint.open(world):
-                            with Chunk('INFO').open(hint) as info:
-                                with Chunk('TYPE').open(info) as type_:
+                        with world.open(inst=hint):
+                            with hint.open('INFO') as info:
+                                with info.open('TYPE') as type_:
                                     type_.write_str(hint.hint_type)
-                                with Chunk('NAME').open(info) as name:
+                                with info.open('NAME') as name:
                                     name.write_str(hint.hint_name)
-                                with Chunk('XFRM').open(info) as xfrm:
+                                with info.open('XFRM') as xfrm:
                                     for f in hint.get_transform():
                                         xfrm.write_float(f)
                             for prop in hint.body:
                                 if not str(prop.args[0]):
                                     continue
-                                with prop.open(hint):
+                                with hint.open(inst=prop):
                                     prop.write_bytes(prop.name)
                                     prop.write_str(prop.args[0])
                     for barrier in world.barriers:
-                        with barrier.open(world):
-                            with Chunk('INFO').open(barrier) as info:
-                                with Chunk('NAME').open(info) as name:
+                        with world.open(inst=barrier):
+                            with barrier.open('INFO') as info:
+                                with info.open('NAME') as name:
                                     name.write_str(barrier.barrier_name)
-                                with Chunk('XFRM').open(info) as xfrm:
+                                with info.open('XFRM') as xfrm:
                                     for f in barrier.get_transform():
                                         xfrm.write_float(f)
-                                with Chunk('SIZE').open(info) as size:
+                                with info.open('SIZE') as size:
                                     for f in barrier.get_size():
                                         size.write_float(f)
-                                with Chunk('FLAG').open(info) as flag:
+                                with info.open('FLAG') as flag:
                                     flag.write_int(barrier.flags)
 
             config_name = file_path.stem

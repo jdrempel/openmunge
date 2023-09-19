@@ -93,6 +93,6 @@ class ConfigInstance(Chunk):
             elif self.name == magic('Geometry'):
                 db.get_section('model').append(entry)
         if self.body is not None:
-            with Chunk('SCOP').open(parent) as scop:
+            with parent.open('SCOP') as scop:
                 for inst in self.body:
                     inst.to_binary(scop)

@@ -28,7 +28,7 @@ class OdfMunge(MungerBase):
             db = ReqDatabase()
             self.logger.info('Munging {file}...'.format(file=file_path))
             odf_name = file_path.stem
-            with Chunk('ucfb').open() as root:
+            with Chunk('ucfb') as root:
                 if odf_data.get('WeaponClass') is not None:
                     class_chunk_name = 'wpnc'
                 elif odf_data.get('OrdnanceClass') is not None:
@@ -37,16 +37,16 @@ class OdfMunge(MungerBase):
                     class_chunk_name = 'expc'
                 else:
                     class_chunk_name = 'entc'
-                with Chunk(class_chunk_name).open(root) as class_chunk:
-                    with Chunk('BASE').open(class_chunk) as base:
+                with root.open(class_chunk_name) as class_chunk:
+                    with class_chunk.open('BASE') as base:
                         class_name, req_parent = odf_data['__class_name']
                         base.write_str(class_name)
                         if req_parent:
                             db.get_section('class').append(class_name)
-                    with Chunk('TYPE').open(class_chunk) as type_:
+                    with class_chunk.open('TYPE') as type_:
                         type_.write_str(odf_name)
                     for key, value in odf_data['Properties']:
-                        with Chunk('PROP').open(class_chunk) as prop:
+                        with class_chunk.open('PROP') as prop:
                             prop.write_bytes(magic(key))
                             prop.write_str(value)
                         if key.startswith(CLASS_KEY_STARTS_WITH):

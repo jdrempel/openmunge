@@ -13,6 +13,6 @@ class TerrainMunge(MungerBase):
         for input_file in self.input_files:
             terrain_reader = TerrainReader(input_file)
             terrain_data = terrain_reader.read()
-            with Chunk('ucfb').open() as root:
-                with terrain_data.open(root):
+            with Chunk('ucfb') as root:
+                with root.open(inst=terrain_data):
                     pass

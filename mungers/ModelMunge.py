@@ -178,18 +178,18 @@ class ModelMunge(MungerBase):
 
         for input_file, msh_data in file_parse_data_map.items():
             msh_name = input_file.stem
-            with Chunk('ucfb').open() as root:
-                with Chunk('skel').open(root) as skel:
+            with Chunk('ucfb') as root:
+                with root.open('skel') as skel:
                     pass
                 for model in msh_data.models:
-                    with Chunk('modl').open(root) as modl:
-                        with Chunk('NAME').open(modl) as name:
+                    with root.open('modl') as modl:
+                        with modl.open('NAME') as name:
                             name.write_str(msh_name)
-                        with Chunk('VRTX').open(modl) as vrtx:
+                        with modl.open('VRTX') as vrtx:
                             vrtx.write_int(0)
-                        with Chunk('NODE').open(modl) as node:
+                        with modl.open('NODE') as node:
                             node.write_int(0)
-                        with Chunk('INFO').open(modl) as info:
+                        with modl.open('INFO') as info:
                             # TODO determine the actual meaning of these 4 ints
                             info.write_int(0)
                             info.write_int(0)
@@ -201,13 +201,13 @@ class ModelMunge(MungerBase):
                             # TODO Figure out how to get this number
                             info.write_int(0)
                         for segment in model.segments:
-                            with Chunk('segm').open(modl) as segm:
-                                with Chunk('INFO').open(segm) as info:
+                            with modl.open('segm') as segm:
+                                with segm.open('INFO') as info:
                                     # TODO what do these numbers mean?
                                     info.write_int(5)
                                     info.write_int(24)
                                     info.write_int(67)
-                                with Chunk('MTRL').open(segm) as mtrl:
+                                with segm.open('MTRL') as mtrl:
                                     # TODO what do these ones mean?
                                     mtrl.write_int(0)
                                     mtrl.write_bytes(b'\xFF'*8)
@@ -215,5 +215,5 @@ class ModelMunge(MungerBase):
                                     mtrl.write_int(0)
                                     mtrl.write_int(0)
                                     mtrl.write_int(0)
-                                with Chunk('RTYP').open(segm) as rtyp:
+                                with segm.open('RTYP') as rtyp:
                                     rtyp.write_str('Normal')
