@@ -1,7 +1,10 @@
 import pathlib
+import re
 from abc import ABC
 
 from jobs.JobBase import JobBase
+
+JOB_ID_REMOVE_INPUT_FILE_CHARS_RE = re.compile(r'[^\dA-Za-z_-]')
 
 
 class MungeJob(JobBase, ABC):
@@ -38,6 +41,16 @@ class ConfigMungeJob(MungeJob):
         self.extension = extension
         self.chunk_id = chunk_id
 
+    def job_id(self):
+        base_job_id = super().job_id()
+        clean_input_files = [re.sub(JOB_ID_REMOVE_INPUT_FILE_CHARS_RE, '_', str(f)) for f in self.input_files]
+        input_files_str = '_'.join(clean_input_files)
+        input_files_deduped = re.sub(r'(_)\1+', '\\1', input_files_str)  # De-duplicate underscores
+        input_files_stripped = input_files_deduped.strip('_')
+        if self.output_file is not None:
+            input_files_stripped += f'_{self.output_file}'
+        return f'{base_job_id}_{input_files_stripped}'
+
     def build_cli_args(self) -> list:
         cli_args = super().build_cli_args()
         if self.hash_strings:
@@ -71,3 +84,11 @@ class WorldMungeJob(MungeJob):
     @staticmethod
     def get_task():
         return 'world'
+
+    def job_id(self):
+        base_job_id = super().job_id()
+        clean_input_files = [re.sub(JOB_ID_REMOVE_INPUT_FILE_CHARS_RE, '_', str(f)) for f in self.input_files]
+        input_files_str = '_'.join(clean_input_files)
+        input_files_deduped = re.sub(r'(_)\1+', '\\1', input_files_str)  # De-duplicate underscores
+        input_files_stripped = input_files_deduped.strip('_')
+        return f'{base_job_id}_{input_files_stripped}'

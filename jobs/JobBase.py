@@ -34,10 +34,11 @@ class JobBase(ABC):
     def job_id(self):
         munge_type = self._get_name_prefix()
         source_stem = self.source_dir.stem
-        run_signature = self.run_signature()
-        if munge_type == source_stem:
-            return '{typ}_{sig}'.format(typ=munge_type, sig=run_signature)
-        return '{typ}-{stem}_{sig}'.format(typ=munge_type, sig=run_signature, stem=source_stem)
+        source_stem_parent = self.source_dir.parent.stem
+        project_stem = self.project_dir.stem
+        if source_stem_parent == project_stem:
+            return f'{munge_type}-{source_stem}'
+        return f'{munge_type}-{source_stem_parent}_{source_stem}'
 
     def run_signature(self):
         hasher = hashlib.md5()
@@ -97,7 +98,10 @@ class JobBase(ABC):
         self.runner_log = job_runner_log
 
         # Set up log file for this job
-        self.log_file_path = self.config.cwd / '{j_id}.log'.format(j_id=self.job_id())
+        log_dir = self.config.cwd / 'logs'
+        if not log_dir.exists():
+            log_dir.mkdir(parents=True, exist_ok=True)
+        self.log_file_path = log_dir / '{j_id}.log'.format(j_id=self.job_id())
         self.log_file = open(self.log_file_path, 'w')
 
     def execute(self):
