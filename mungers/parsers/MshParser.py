@@ -32,19 +32,38 @@ class MshParser:
             tri_strips.append(strip_buffer)
         return tri_strips
 
+    def parse_mesh(self, chunk):
+        while chunk.could_have_child():
+            msh2_next_header = chunk.check_next_header()
+
+            if msh2_next_header == 'SINF':
+                with chunk.read_child() as sinf:
+                    self.parse_scene_info(sinf)
+
+            elif msh2_next_header == 'CAMR':
+                if chunk.check_next_header() == 'CAMR':
+                    with chunk.read_child() as camr:
+                        chunk.skip(camr.size)
+
+            elif msh2_next_header == 'MATL':
+                with chunk.read_child() as matl:
+                    self.parse_materials_list(matl)
+
+            elif msh2_next_header == 'MODL':
+                with chunk.read_child() as modl:
+                    self.models.append(self.parse_model(modl))
+
+            else:
+                raise ValueError(f'Invalid chunk name encountered in MSH2: '
+                                 f'"{msh2_next_header}"')
+
     def parse(self):
         with self.path.open('rb') as f:
             with BinaryReader(f) as file_root:
                 with file_root.read_child() as hedr:
-                    hedr_available_chunks = {'SHVO': 1, 'MSH2': 1, 'BLN2': 1, 'SKL2': 1, 'ANM2': float('inf'), 'CL1L': 1}
 
                     while hedr.could_have_child():
                         hedr_next_header = hedr.check_next_header()
-                        if hedr_next_header not in hedr_available_chunks:
-                            raise ValueError(f'Invalid chunk name encountered in HEDR: "{hedr_next_header}"')
-                        if hedr_available_chunks[hedr_next_header] <= 0:
-                            raise ValueError(f'Did not expect to encounter another "{hedr_next_header}" inside HEDR')
-                        hedr_available_chunks[hedr_next_header] -= 1
 
                         if hedr_next_header == 'SHVO':
                             with hedr.read_child() as shvo:
@@ -52,35 +71,7 @@ class MshParser:
 
                         elif hedr_next_header == 'MSH2':
                             with hedr.read_child() as msh2:
-                                msh2_available_chunks = {'SINF': 1, 'CAMR': 1, 'MATL': 1, 'MODL': float('inf')}
-
-                                models = []
-                                while msh2.could_have_child():
-                                    msh2_next_header = msh2.check_next_header()
-                                    if msh2_next_header not in msh2_available_chunks:
-                                        raise ValueError(
-                                            f'Invalid chunk name encountered in MSH2: "{msh2_next_header}"')
-                                    if msh2_available_chunks[msh2_next_header] <= 0:
-                                        raise ValueError(
-                                            f'Did not expect to encounter another "{msh2_next_header}" inside MSH2')
-                                    msh2_available_chunks[msh2_next_header] -= 1
-
-                                    if msh2_next_header == 'SINF':
-                                        with msh2.read_child() as sinf:
-                                            self.parse_scene_info(sinf)
-
-                                    elif msh2_next_header == 'CAMR':
-                                        if msh2.check_next_header() == 'CAMR':
-                                            with msh2.read_child() as camr:
-                                                msh2.skip(camr.size)
-
-                                    elif msh2_next_header == 'MATL':
-                                        with msh2.read_child() as matl:
-                                            self.parse_materials_list(matl)
-
-                                    elif msh2_next_header == 'MODL':
-                                        with msh2.read_child() as modl:
-                                            self.models.append(self.parse_model(modl))
+                                self.parse_mesh(msh2)
 
                         elif hedr_next_header == 'BLN2':
                             with hedr.read_child() as bln2:
@@ -99,6 +90,10 @@ class MshParser:
                                 pass
                             # CL1L marks end of file
                             break
+
+                        else:
+                            raise ValueError(f'Unexpected chunk {hedr_next_header} found in HEDR at position '
+                                             f'{hedr.get_position()}')
 
     def parse_scene_info(self, scene_info_chunk):
         with scene_info_chunk.read_child() as name:
