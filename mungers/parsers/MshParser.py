@@ -36,7 +36,7 @@ class MshParser:
         with self.path.open('rb') as f:
             with BinaryReader(f) as file_root:
                 with file_root.read_child() as hedr:
-                    hedr_available_chunks = {'SHVO': 1, 'MSH2': 1, 'BLN2': 1, 'SKL2': 1, 'CL1L': 1}
+                    hedr_available_chunks = {'SHVO': 1, 'MSH2': 1, 'BLN2': 1, 'SKL2': 1, 'ANM2': float('inf'), 'CL1L': 1}
 
                     while hedr.could_have_child():
                         hedr_next_header = hedr.check_next_header()
@@ -84,6 +84,10 @@ class MshParser:
 
                         elif hedr_next_header == 'BLN2':
                             with hedr.read_child() as bln2:
+                                pass
+
+                        elif hedr_next_header == 'ANM2':
+                            with hedr.read_child() as anm2:
                                 pass
 
                         elif hedr_next_header == 'SKL2':

@@ -288,7 +288,7 @@ class GlobalConfig(Config):
                         alts=['-ll'],
                         choices=('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'),
                         default='INFO',
-                        sections=[self.name],  # TODO add sections for batch and mungers?
+                        sections=[self.name],
                         help='The minimum level of log message to be displayed. Choices: %(choices)s. '
                              'Default: {default}.')
 
