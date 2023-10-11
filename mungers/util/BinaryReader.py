@@ -98,15 +98,15 @@ class BinaryReader:
         return result[0] if n == 1 else result
 
     def read_vec2(self, n: int = 1):
-        result = [Vector2(*self.read_f32(2)) for _ in range(n)]
+        result = [Vector2.from_binary(self) for _ in range(n)]
         return result[0] if n == 1 else result
 
     def read_vec3(self, n: int = 1):
-        result = [Vector3(*self.read_f32(3)) for _ in range(n)]
+        result = [Vector3.from_binary(self) for _ in range(n)]
         return result[0] if n == 1 else result
 
     def read_vec4(self, n: int = 1):
-        result = [Vector4(*self.read_f32(4)) for _ in range(n)]
+        result = [Vector4.from_binary(self) for _ in range(n)]
         return result[0] if n == 1 else result
 
     def read_quat(self):
@@ -114,8 +114,7 @@ class BinaryReader:
         return Vector4(rot[3], rot[0], rot[1], rot[2])
 
     def read_mat33(self):
-        values = self.read_f32(3*3)
-        return Matrix33(values=values)
+        return Matrix33.from_binary(self)
 
     def read_child(self, check_name: str = None, optional: bool = False):
         if check_name is not None:

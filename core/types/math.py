@@ -17,6 +17,10 @@ class Vector2:
     def ones(cls):
         return cls(1.0, 1.0)
 
+    @classmethod
+    def from_binary(cls, chunk):
+        return cls(*chunk.read_f32(2))
+
     def __str__(self):
         return 'Vector2<{0.x}, {0.y}>'.format(self)
 
@@ -97,6 +101,10 @@ class Vector3:
         self.x = x
         self.y = y
         self.z = z
+
+    @classmethod
+    def from_binary(cls, chunk):
+        return cls(*chunk.read_f32(3))
 
     @classmethod
     def zero(cls):
@@ -199,6 +207,10 @@ class Vector4:
         self.x = x
         self.y = y
         self.z = z
+
+    @classmethod
+    def from_binary(cls, chunk):
+        return cls(*chunk.read_f32(4))
 
     @classmethod
     def zero(cls):
@@ -333,3 +345,7 @@ class Matrix33:
         r2 = Vector3(r20, r21, r22)
 
         return cls(vectors=(r0, r1, r2))
+
+    @classmethod
+    def from_binary(cls, chunk):
+        return cls(*chunk.read_f32(3*3))
