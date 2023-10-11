@@ -163,8 +163,7 @@ class MshParser:
         if not self.is_shadow_mesh:
             with segment_chunk.read_child() as posl:
                 num_coordinates = posl.read_u32()
-                for _ in range(num_coordinates):
-                    coordinates.append(posl.read_vec3())
+                coordinates.append(posl.read_vec3(num_coordinates))
 
         colours = []
         if segment_chunk.check_next_header() == 'CLRL':
@@ -184,15 +183,13 @@ class MshParser:
         if not self.is_shadow_mesh:
             with segment_chunk.read_child() as nrml:
                 num_normals = nrml.read_u32()
-                for _ in range(num_normals):
-                    normals.append(nrml.read_vec3())
+                normals.append(nrml.read_vec3(num_normals))
 
         uvs = []
         if segment_chunk.check_next_header() == 'UV0L':
             with segment_chunk.read_child() as uv0l:
                 num_uvs = nrml.read_u32()
-                for _ in range(num_uvs):
-                    uvs.append(nrml.read_vec2())
+                uvs.append(nrml.read_vec2(num_uvs))
 
         polys = []
         if segment_chunk.check_next_header() == 'NDXL':
@@ -254,7 +251,7 @@ class MshParser:
         while model_header_chunk.check_next_header() == 'SWCI':
             with model_header_chunk.read_child() as swci:
                 primitive = CollisionPrimitive(
-                    shape=swci.read_i32(),
+                    shape=swci.read_s32(),
                     radius=swci.read_f32(),
                     height=swci.read_f32(),
                     length=swci.read_f32()
